@@ -1,7 +1,7 @@
 .env
 .venv/
-data/*.csv
-data/*.zip
+data/**/*.csv
+data/**/*.zip
 dbt/target/
 dbt/dbt_packages/
 dbt/logs/
