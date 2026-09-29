@@ -4,6 +4,10 @@
 > `PROJECT_PLAN.md` (or `CLAUDE.md`) in the repo root so Claude Code reads it
 > automatically as project context.
 
+> **Read `docs/status.md` first** for current environment (Python version,
+> BigQuery Sandbox constraints, what's set up, what's blocked). This brief
+> stays fixed; status changes session to session.
+
 ## 1. Business Question (the one thing this project must answer)
 
 An online store spends budget across several marketing channels. Which
