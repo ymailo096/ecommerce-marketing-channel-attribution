@@ -169,16 +169,31 @@ python -c "from google.cloud import bigquery; \
 Should print `['olist_raw']` (or whatever datasets exist). If it prints
 that, dbt will work too — same credentials, same library underneath.
 
-## 9. Open items for the user
+## 9. Values decided so far
+
+| What | Value | Decided |
+|---|---|---|
+| GCP project id | `ecommerce-channel-attribution` | 2026-09-29 |
+| GCP project number | `634255615087` | 2026-09-29 |
+| Dataset region | `EU` (multi-region) | 2026-09-29 |
+| Raw dataset name | `olist_raw` | 2026-09-29 (proposal, not yet created) |
+| Local auth path | A — `gcloud` ADC | 2026-09-29 (proposal) |
+
+## 10. Open items for the user
 
 Before we can move forward on §10 of the brief (ad hoc CAC SQL):
 
-- [x] Dataset region — **EU multi-region** (decided 2026-09-29).
-- [ ] Create the GCP project + dataset (§2) — dataset in `EU`.
-- [ ] Attach billing + set a \$1/month alert (§2.3).
-- [ ] Choose path A or B for local auth (§3) and run through it.
-- [ ] Send me the project id — I'll wire the dbt profile + Python load
-      script to it (region is already fixed at `EU`).
+- [x] GCP project created — `ecommerce-channel-attribution`.
+- [ ] BigQuery API enabled on the project (Console → APIs & Services).
+- [ ] Billing account attached + \$1/month budget alert (§2.3).
+- [ ] Dataset `olist_raw` created **in region `EU`** (§2.4).
+- [ ] `gcloud` CLI installed + `gcloud auth application-default login`
+      run (§3, path A). This needs a macOS installer with admin
+      password — I can't run it for you.
+- [ ] Confirm the above are all done → I'll set up `.venv`, install
+      `dbt-bigquery` + `google-cloud-bigquery`, generate
+      `~/.dbt/profiles.yml`, and run the auth verification one-liner
+      from §8.
 
 Kaggle download itself stays deferred until this is in place; there's no
 point downloading 45 MB of CSV until we know which BigQuery project it's
