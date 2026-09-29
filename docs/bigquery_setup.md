@@ -35,9 +35,13 @@ your Google account).
 3. **Attach a billing account** to the project (required even for free
    tier), then set a budget alert as above.
 4. **Create a dataset** inside the project — suggested name
-   `olist_raw` (US or EU multi-region; pick one and stick with it).
-   We'll add `olist_staging`, `olist_marts` etc. later; keeping raw
-   isolated makes it obvious what came from the source vs. what we built.
+   `olist_raw`, **region: `EU` (multi-region)** — decided 2026-09-29.
+   Every other dataset we add later (`olist_staging`, `olist_marts`,
+   etc.) must be created in the same `EU` region: BigQuery cannot
+   join tables across regions, and it silently fails with a
+   "Not found: Dataset … was not found in location EU" error rather
+   than doing a cross-region copy. Keeping raw isolated makes it
+   obvious what came from the source vs. what we built.
 
 ## 3. Local auth — pick one of two paths
 
@@ -108,7 +112,7 @@ ecommerce_attribution:
       method: oauth              # uses ADC from `gcloud auth application-default login`
       project: <your-gcp-project-id>
       dataset: olist_staging     # dbt's default output dataset (dev)
-      location: US               # must match the dataset region from §2.4
+      location: EU               # must match the dataset region from §2.4 — decided EU
       threads: 4
       timeout_seconds: 300
 ```
@@ -169,11 +173,12 @@ that, dbt will work too — same credentials, same library underneath.
 
 Before we can move forward on §10 of the brief (ad hoc CAC SQL):
 
-- [ ] Create the GCP project + dataset (§2).
+- [x] Dataset region — **EU multi-region** (decided 2026-09-29).
+- [ ] Create the GCP project + dataset (§2) — dataset in `EU`.
 - [ ] Attach billing + set a \$1/month alert (§2.3).
 - [ ] Choose path A or B for local auth (§3) and run through it.
-- [ ] Confirm the project id + dataset region — I'll wire the dbt
-      profile + Python load script to those exact values.
+- [ ] Send me the project id — I'll wire the dbt profile + Python load
+      script to it (region is already fixed at `EU`).
 
 Kaggle download itself stays deferred until this is in place; there's no
 point downloading 45 MB of CSV until we know which BigQuery project it's
