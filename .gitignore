@@ -1,4 +1,5 @@
 .env
+.venv/
 data/*.csv
 data/*.zip
 dbt/target/
@@ -7,3 +8,7 @@ dbt/logs/
 __pycache__/
 *.pyc
 .DS_Store
+# Never commit GCP service-account keys, even by accident
+*.sa.json
+*service-account*.json
+gcp-*.json
