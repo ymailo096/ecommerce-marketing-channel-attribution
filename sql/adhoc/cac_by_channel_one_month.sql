@@ -19,8 +19,8 @@
 -- `new_customers` CTE, then join `ad_spend` on those two keys. Never
 -- join `ad_spend` directly onto `orders` or `order_items`.
 --
--- Placeholders `{project}.{raw_dataset}` are filled in by
--- python/run_adhoc_cac.py at execution time.
+-- Uses unqualified `olist_raw.<table>` refs; the default project comes from
+-- `gcloud config set project`.
 
 WITH
 -- One row per customer_unique_id with a deterministic channel bucket.
@@ -37,7 +37,7 @@ channels AS (
       WHEN MOD(ABS(FARM_FINGERPRINT(customer_unique_id)), 100) < 85 THEN 'Facebook/Instagram Ads'
       ELSE 'Email/Referral'
     END AS channel
-  FROM `{project}.{raw_dataset}.customers`
+  FROM `olist_raw.customers`
   GROUP BY customer_unique_id
 ),
 
@@ -48,8 +48,8 @@ first_purchase AS (
   SELECT
     c.customer_unique_id,
     DATE_TRUNC(DATE(MIN(o.order_purchase_timestamp)), MONTH) AS first_purchase_month
-  FROM `{project}.{raw_dataset}.orders` o
-  JOIN `{project}.{raw_dataset}.customers` c
+  FROM `olist_raw.orders` o
+  JOIN `olist_raw.customers` c
     ON o.customer_id = c.customer_id
   GROUP BY c.customer_unique_id
 ),
@@ -59,7 +59,7 @@ first_purchase AS (
 -- subquery).
 busiest_month AS (
   SELECT DATE_TRUNC(DATE(order_purchase_timestamp), MONTH) AS month
-  FROM `{project}.{raw_dataset}.orders`
+  FROM `olist_raw.orders`
   GROUP BY month
   ORDER BY COUNT(*) DESC
   LIMIT 1
@@ -85,7 +85,7 @@ SELECT
   s.spend_brl,
   ROUND(s.spend_brl / nc.new_customer_count, 2) AS cac_brl
 FROM new_customers nc
-JOIN `{project}.{raw_dataset}.ad_spend` s
+JOIN `olist_raw.ad_spend` s
   ON s.channel = nc.channel
  AND s.month = nc.month
 ORDER BY cac_brl ASC;
