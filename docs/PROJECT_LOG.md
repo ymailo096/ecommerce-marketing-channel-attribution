@@ -241,11 +241,37 @@ Organic is 17× cheaper than Google Ads on CAC — this is the exact
 | 3 — automated | ⬜ |
 
 ### LTV-proxy (90 days)
-| Step | State |
-|------|-------|
-| 1 — ad hoc | ⬜ |
-| 2 — dbt | ⬜ |
+
+| Step | State | Evidence |
+|------|-------|----------|
+| 1 — ad hoc verified | ✅ 2026-09-30 | [`sql/adhoc/ltv_by_channel_one_month.sql`](../sql/adhoc/ltv_by_channel_one_month.sql) run for 2017-11 cohort. Cohort sizes match the CAC counts exactly (same customer set — the query re-derives channel via the same FARM_FINGERPRINT hash). Table below. |
+| 2 — dbt | ⬜ next up |
 | 3 — automated | ⬜ |
+
+Verified 2017-11 LTV-proxy snapshot:
+
+| Channel                 | Cohort size | LTV total (BRL) | LTV per customer (BRL) |
+|-------------------------|-------------|-----------------|------------------------|
+| Organic                 | 2,907       | 481,541.18      | 165.65                 |
+| Google Ads              | 1,920       | 316,773.00      | 164.99                 |
+| Facebook/Instagram Ads  | 1,386       | 219,322.42      | 158.24                 |
+| Email/Referral          | 1,091       | 172,477.98      | 158.09                 |
+
+**Warning — LTV difference between channels is tiny** (158–166 BRL, ~5%
+spread). This is a *direct consequence of channel being a random hash
+of customer_unique_id*: since channel is independent of any purchase
+behavior, per-channel LTV averages converge to the overall population
+mean. The brief's "channel X looks cheap on CAC but bad on LTV" story
+needs an actual LTV-channel correlation to work — right now the ROAS
+ordering will just mirror the CAC ordering (inverse), because LTVs
+are ~equal and CACs differ. Two ways to introduce that correlation
+later, if we want the story arc for the portfolio narrative:
+1. Bias the channel hash so certain channels get a
+   higher/lower share of high-value customers (need a real customer
+   attribute — e.g. `customer_state` — to bias on).
+2. Adjust ad_spend so the CAC ordering ends up more nuanced.
+
+Not doing either right now — flagging for a later design decision.
 
 ### ROAS
 | Step | State |
