@@ -1,0 +1,23 @@
+version: 2
+
+# Column-level tests on staging. dbt built-ins only (no packages).
+# These run on every `dbt test` and every CI daily-cron run.
+
+models:
+  - name: stg_ad_spend
+    description: >
+      1 row per (channel, month). Synthetic, seeded — see
+      `python/generate_ad_spend_csv.py`.
+    columns:
+      - name: channel
+        description: Marketing channel bucket.
+        data_tests:
+          - not_null
+      - name: month
+        description: First day of the month (DATE).
+        data_tests:
+          - not_null
+      - name: spend_brl
+        description: BRL spent on this channel in this month.
+        data_tests:
+          - not_null

@@ -189,6 +189,54 @@ or prevented.**
 - **Prevented**: Phase 4 turning into "stand up an orchestrator" instead
   of "wire the two commands we already have to a schedule".
 
+### 2026-09-30 — dbt tests added; CI now runs `dbt test` after `dbt run`
+- **Why this**: previously the (channel, month) uniqueness on each
+  mart was verified once, manually, before the ROAS join went in.
+  A one-shot check is not a contract — nothing stops a future
+  upstream change from introducing fan-out and silently
+  double-counting. Same argument for `stg_ad_spend.spend_brl` being
+  not-null and for the cac_brl=0 divide-by-zero guard.
+- **What we added**:
+  - `dbt/models/staging/_schema.yml` — dbt built-in `not_null` on
+    `stg_ad_spend.channel`, `.month`, `.spend_brl`.
+  - `dbt/tests/mart_*_pk_channel_month.sql` — one singular
+    uniqueness test per mart (CAC, LTV, repeat, ROAS). Pure SQL,
+    no `dbt-utils` dependency.
+  - `dbt/tests/mart_cac_by_channel__no_exact_zero_cac.sql` — flags
+    `cac_brl = 0` exactly. Near-zero (0.40 BRL for Organic 2017-11)
+    is expected and passes; an exact zero would mean spend_brl was
+    0 with new_customer_count > 0 (either a bug in the generator or
+    a corrupted source), which would send ROAS to +∞ silently.
+  - `.github/workflows/daily.yml` — new `dbt test` step, runs after
+    `dbt run`, uses the same profile/env.
+- **Not the alternatives**:
+  - `dbt_utils.unique_combination_of_columns` — cleaner API but
+    would require adding `dbt_utils` as a package + running
+    `dbt deps` in CI. For four one-line uniqueness checks, singular
+    tests are simpler with no dependency footprint.
+  - `dbt build` (which combines run + test with per-model
+    fail-fast) — arguably better, but two separate steps show up
+    as two visible outcomes in the Actions UI, which makes "the
+    ROAS mart broke on today's run" faster to spot than "step 6
+    partially succeeded".
+- **Verified**: local `dbt test` produces 8 tests, 8 pass (3 not_null
+  on stg_ad_spend + 4 mart PK uniqueness + 1 no-exact-zero-cac).
+  CI run after this commit will re-verify the same set.
+
+### 2026-09-30 — README "Data contract / assumptions" section (near top)
+- **Why this**: the "channel is synthetic, LTV flatness is by
+  design" caveats were buried in PROJECT_LOG. A skimmer looking at
+  the 2017-11 numbers table sees "Organic ROAS 418×" and needs to
+  know within 10 seconds that this reflects the synthetic
+  assignment + synthetic spend, not real customer-quality
+  differences.
+- **What we added**: a 4-bullet "Data contract / assumptions"
+  section in README immediately after the Recommendation and
+  before the Stack list. Names each synthetic input, states
+  explicitly that LTV flatness is expected by design, and confirms
+  that orders/customers/payments are the real anonymized Olist
+  data.
+
 ### 2026-09-30 — Moved `CLAUDE.md` → `docs/PROJECT_BRIEF.md` (kept a 3-line pointer at root)
 - **Why this**: after the first-screen review, the biggest single
   file at the repo root (~7 KB of AI-agent-facing brief) was still

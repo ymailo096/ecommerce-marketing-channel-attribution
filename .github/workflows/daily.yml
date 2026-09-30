@@ -65,3 +65,13 @@ jobs:
         env:
           DBT_PROFILES_DIR: .
         run: dbt run
+
+      - name: dbt test
+        # Enforces contracts (composite PK uniqueness on every mart,
+        # not_null on stg_ad_spend, no-zero-cac guard) on every CI
+        # run. Fails the workflow if any assumption breaks, so we
+        # don't silently ship wrong marts.
+        working-directory: dbt
+        env:
+          DBT_PROFILES_DIR: .
+        run: dbt test
