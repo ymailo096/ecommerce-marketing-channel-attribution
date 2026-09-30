@@ -47,11 +47,9 @@ sync commit-by-commit rather than at the end.
 2. Compose `mart_roas_by_channel` = ltv_per_customer_brl /
    cac_brl per (channel, cohort_month) — trivial join now that both
    sides share grain.
-3. Decide whether to introduce channel-dependent LTV so the "cheap
-   CAC channel loses on LTV" narrative can emerge (see LTV
-   rule-of-three notes below).
-4. Snapshot the finished analysis one-pager into README's "Key
-   finding" section.
+3. Write Phase 6 headline (the "data-quality-red-flag" framing —
+   see decision-log entry `Channel-LTV flatness is the actual
+   Phase 6 headline`) into README's "Key finding" section.
 
 ---
 
@@ -199,6 +197,38 @@ or prevented.**
   chat transcript during trial-and-error. All three revoked immediately
   after; only the last one lives in `~/.git-credentials` locally.
 
+### 2026-09-30 — Channel-LTV flatness is the actual Phase 6 headline
+- **Why this**: LTV verification (see rule-of-three log) shows
+  per-channel LTV within ~5% across all four channels. This is not
+  noise on top of a hidden signal — it *is* the signal. Channel is a
+  deterministic hash of `customer_unique_id`, independent of every
+  purchase-behaviour attribute in the data (PROJECT_PLAN §4), so
+  per-channel LTV averages have to converge to the overall mean.
+- **Not the alternatives**: biasing the channel hash on
+  `customer_state` or basket size (would manufacture a story that
+  isn't in the data); adjusting `ad_spend` post hoc to move the CAC
+  ordering (dishonest, and doesn't answer the actual project
+  question). Both were considered and rejected.
+- **What replaces the "cheap CAC channel loses on LTV" fabricated
+  story**: an honest headline that follows from the numbers we
+  actually have:
+
+  > Under a channel-neutral customer base, the entire ROAS story
+  > reduces to CAC. Organic's 17× CAC advantage over Google Ads
+  > translates almost 1:1 into a 17× ROAS advantage. If a real
+  > business ever produced this pattern — one paid-looking channel
+  > with a near-zero CAC — the correct first move wouldn't be
+  > "spend more on channel A", it would be "audit whether channel
+  > A's spend is being under-reported by the source system". A
+  > near-zero CAC on any paid-looking channel is a data-quality
+  > red flag before it is an investment thesis.
+- **Unblocked**: Phase 6 no longer has a "make up a difference"
+  problem. The write-up can be about the methodology (grain
+  reconciliation, cohort-aligned ROAS) and the observation that a
+  behaviour-neutral customer base makes the entire ROAS ordering
+  reducible to spend-side data quality — a more mature analyst
+  finding than a fabricated behavioural split.
+
 ### 2026-09-30 — `~/.claude/skills/marketing-metrics/` created as project-scoped skill
 - **Why this**: the metric formulas (CAC/LTV/repeat/ROAS + channel
   weights + granularity trap) are the highest-cost thing to get wrong
@@ -266,21 +296,18 @@ Verified 2017-11 LTV-proxy snapshot:
 | Facebook/Instagram Ads  | 1,386       | 219,322.42      | 158.24                 |
 | Email/Referral          | 1,091       | 172,477.98      | 158.09                 |
 
-**Warning — LTV difference between channels is tiny** (158–166 BRL, ~5%
-spread). This is a *direct consequence of channel being a random hash
-of customer_unique_id*: since channel is independent of any purchase
-behavior, per-channel LTV averages converge to the overall population
-mean. The brief's "channel X looks cheap on CAC but bad on LTV" story
-needs an actual LTV-channel correlation to work — right now the ROAS
-ordering will just mirror the CAC ordering (inverse), because LTVs
-are ~equal and CACs differ. Two ways to introduce that correlation
-later, if we want the story arc for the portfolio narrative:
-1. Bias the channel hash so certain channels get a
-   higher/lower share of high-value customers (need a real customer
-   attribute — e.g. `customer_state` — to bias on).
-2. Adjust ad_spend so the CAC ordering ends up more nuanced.
-
-Not doing either right now — flagging for a later design decision.
+**Expected finding — LTV is statistically flat across channels**
+(158–166 BRL, ~5% spread, well within the sampling noise for cohorts
+of 1,091–2,907 customers per channel). This is a direct and *intended*
+consequence of PROJECT_PLAN.md §4: channel assignment is a
+deterministic hash of `customer_unique_id`, so it is independent of
+every purchase-behavior attribute in the data. Per-channel LTV
+averages therefore converge to the overall population mean, exactly
+as the design predicts. **Not a bug** — do NOT introduce bias into
+the channel hash or the customer→channel assignment to "fix" it.
+The Phase 6 headline follows from this flatness directly — see the
+decision-log entry `2026-09-30 — Channel-LTV flatness is the actual
+Phase 6 headline`.
 
 ### ROAS
 | Step | State |
