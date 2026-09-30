@@ -21,19 +21,16 @@ file wins.
   (stdlib, seed 42) and loaded to `olist_raw.ad_spend`.
 - GitHub API pull deferred to Phase 4.
 
-**Phase 2 (modeling)** — CAC + LTV + repeat rate complete. ROAS mart
-is the only remaining composition.
+**Phase 2 (modeling)** — complete: CAC + LTV + repeat rate + ROAS,
+all with mart-vs-ad-hoc parity for 2017-11.
 - dbt project scaffolded at `dbt/`, target dataset `olist_dbt`, all
   models materialize as `table`.
-- 12 models exist and `dbt run` is green:
+- 13 models exist and `dbt run` is green:
   staging (5) → intermediate (4: `int_customer_channel`,
   `int_new_customers_by_channel_month`, `int_customer_ltv_90d`,
   `int_customer_repeat_90d`) →
-  marts (3: `mart_cac_by_channel`, `mart_ltv_by_channel`,
-  `mart_repeat_rate_by_channel`).
-- All three marts share the same (channel, first_purchase_month)
-  grain by construction — a future `mart_roas_by_channel` is a 3-way
-  join on that composite key with no aggregation.
+  marts (4: `mart_cac_by_channel`, `mart_ltv_by_channel`,
+  `mart_repeat_rate_by_channel`, `mart_roas_by_channel`).
 
 **Phase 3 (A/B test)** — not started.
 
@@ -45,12 +42,13 @@ is the only remaining composition.
 sync commit-by-commit rather than at the end.
 
 ### Immediate next steps
-1. Compose `mart_roas_by_channel` = ltv_per_customer_brl /
-   cac_brl per (channel, cohort_month) — 3-way join on (channel,
-   month) across the three existing marts, no aggregation.
-2. Write Phase 6 headline (the "data-quality-red-flag" framing —
+1. Write Phase 6 headline (the "data-quality-red-flag" framing —
    see decision-log entry `Channel-LTV flatness is the actual
-   Phase 6 headline`) into README's "Key finding" section.
+   Phase 6 headline`) into README's "Key finding" section. All mart
+   numbers needed for it now exist.
+2. A/B test (§3, standalone) — Python + scipy z-test / p-value.
+3. Phase 4 — GitHub Actions cron for the GitHub API pull + `dbt run`.
+4. Phase 5 — Tableau Public dashboard over the four marts.
 
 ---
 
@@ -329,11 +327,42 @@ decision-log entry `2026-09-30 — Channel-LTV flatness is the actual
 Phase 6 headline`.
 
 ### ROAS
-| Step | State |
-|------|-------|
-| 1 — ad hoc | ⬜ (blocked on LTV) |
-| 2 — dbt | ⬜ |
+
+| Step | State | Evidence |
+|------|-------|----------|
+| 1 — ad hoc verified | ✅ 2026-09-30 | Hand-computed for 2017-11 all four channels (numerators/denominators shown in the ROAS commit message and below), then cross-checked against the mart to 4 decimal places. |
+| 2 — dbt | ✅ 2026-09-30 | `mart_roas_by_channel` (3-way INNER JOIN of CAC, LTV, repeat marts on (channel, month) — 1:1:1, no aggregation). Uniqueness of (channel, month) in each input was verified empirically first (CAC 104/104, LTV 91/91, repeat 91/91), so the join cannot fan out. Result count 91 matches the min of the three input keysets. |
 | 3 — automated | ⬜ |
+
+Verified 2017-11 ROAS snapshot (side-by-side hand vs mart, per
+`verify-rigorously` skill §4):
+
+| Channel                 | Hand cac | Mart cac | Hand ltv/c | Mart ltv/c | Hand ROAS | Mart ROAS |
+|-------------------------|----------|----------|------------|------------|-----------|-----------|
+| Organic                 | 0.395555 | 0.395556 | 165.65089  | 165.648841 | 418.78    | 418.78    |
+| Google Ads              | 6.735416 | 6.735417 | 164.98593  | 164.985938 | 24.49     | 24.50     |
+| Facebook/Instagram Ads  | 4.433790 | 4.433795 | 158.24149  | 158.241284 | 35.69     | 35.69     |
+| Email/Referral          | 1.547310 | 1.547314 | 158.09164  | 158.091641 | 102.17    | 102.17    |
+
+Differences: 6th decimal (rounding in the hand math, not the mart);
+24.49 vs 24.50 for Google Ads is the same number 24.4953 rounded to
+2 dp by hand (down) vs BigQuery ROUND (up).
+
+Identity cross-check (ltv_per_customer_brl / cac_brl ≡ ltv_total_brl / spend_brl):
+computed both ways in a single SELECT — all four channels agree to
+4 dp (Organic 418.7752, Google 24.4953, FB/IG 35.6898,
+Email 102.1716).
+
+**Interpretation caveat (verify-rigorously skill §3)**: these ROAS
+numbers reflect the synthetic ad_spend ranges we chose (Organic
+500–1500 BRL/month vs Google Ads 8000–15000) multiplied by a
+quasi-constant LTV per customer (~158–166 BRL, independent of
+channel by construction). The 17× Organic-vs-Google ordering is
+therefore *not* a signal that Organic is a better acquisition
+channel — it's the direct arithmetic consequence of the spend
+weights we set. This is precisely the "data-quality red flag before
+investment thesis" framing recorded in the decision-log entry
+`Channel-LTV flatness is the actual Phase 6 headline`.
 
 ### A/B test
 Standalone mini-case per brief §5.5 — deliberately not on the
