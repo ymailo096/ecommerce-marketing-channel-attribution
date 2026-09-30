@@ -4,9 +4,9 @@
 > `PROJECT_PLAN.md` (or `CLAUDE.md`) in the repo root so Claude Code reads it
 > automatically as project context.
 
-> **Read `docs/status.md` first** for current environment (Python version,
-> BigQuery Sandbox constraints, what's set up, what's blocked). This brief
-> stays fixed; status changes session to session.
+> **Read `docs/PROJECT_LOG.md` first** — decision log, per-metric
+> rule-of-three progress, current status. This brief stays fixed; the
+> log changes every step. Whenever the two disagree, PROJECT_LOG wins.
 
 ## 1. Business Question (the one thing this project must answer)
 
