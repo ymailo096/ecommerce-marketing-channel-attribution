@@ -6,6 +6,10 @@ brief and does not change; this file changes on every meaningful step.
 Single source of truth: when this and any other doc disagree, this
 file wins.
 
+## Live artifact
+
+**GitHub**: https://github.com/ymailo096/ecommerce-marketing-channel-attribution
+
 ## Current status (2026-09-30)
 
 **Phase 1 (data)** — complete.
@@ -168,6 +172,23 @@ or prevented.**
   Actions cron core.
 - **Prevented**: Phase 4 turning into "stand up an orchestrator" instead
   of "wire the two commands we already have to a schedule".
+
+### 2026-09-30 — Pushed to GitHub over HTTPS + PAT (credential.helper store)
+- **Why this**: fastest path from zero-remote to a live public URL. HTTPS
+  works on any machine, no SSH-key dance, no `gh` CLI install.
+- **Not the alternatives**: SSH keys (extra step to register the pubkey
+  on github.com); `gh` CLI (not installed, adds another auth flow to run).
+- **Trap hit**: `git config --global credential.helper` was already set
+  to `osxkeychain` from an earlier failed interactive push. When I added
+  `store` for the file-based flow, git kept BOTH helpers and tried
+  keychain first — pulling stale bad creds and getting 403. Fix was
+  `git config --global --unset-all credential.helper` then set only
+  `store`, plus one `git credential-osxkeychain erase` to clear the
+  stale github.com entry. Filed here so we don't spend the same 15
+  minutes twice.
+- **Cost of exposed tokens**: three PATs ended up in this session's
+  chat transcript during trial-and-error. All three revoked immediately
+  after; only the last one lives in `~/.git-credentials` locally.
 
 ### 2026-09-30 — `~/.claude/skills/marketing-metrics/` created as project-scoped skill
 - **Why this**: the metric formulas (CAC/LTV/repeat/ROAS + channel
