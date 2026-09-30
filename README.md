@@ -41,7 +41,7 @@ LTV per customer is statistically flat across channels (158–166 BRL,
 hash of `customer_unique_id`, independent of any purchase behaviour,
 so per-channel LTV averages have to converge to the population mean.
 Do **not** infer that Organic customers are better or worse than
-Google Ads customers — statistically they're the same.
+Google Ads customers. Statistically they're the same.
 
 ## Recommendation
 
@@ -134,9 +134,9 @@ The synthetic `ad_spend` table lives at **channel+month grain —
 deliberately coarser than orders**. Every downstream model that
 touches it must first aggregate customer/order rows to channel+month;
 joining spend directly onto order-level rows is the fan-out trap
-this project is designed to teach avoiding. The intermediate layer
-is where that grain reconciliation happens on purpose, before the
-mart.
+the intermediate layer prevents by aggregating up first. That grain
+reconciliation happens on purpose, in the intermediate layer, before
+the mart.
 
 ## Locked metric formulas
 

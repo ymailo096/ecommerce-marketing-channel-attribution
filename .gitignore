@@ -2,6 +2,10 @@
 .venv/
 data/**/*.csv
 data/**/*.zip
+# Exception: mart snapshots for Tableau Public feed — deterministic
+# outputs of dbt, small (<10 KB each), committed so a reviewer can see
+# actual mart values on GitHub without needing BigQuery access.
+!data/tableau_export/*.csv
 dbt/target/
 dbt/dbt_packages/
 dbt/logs/
