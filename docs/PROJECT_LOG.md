@@ -34,7 +34,10 @@ all with mart-vs-ad-hoc parity for 2017-11.
 
 **Phase 3 (A/B test)** — not started.
 
-**Phase 4 (automation via GitHub Actions cron)** — not started.
+**Phase 4 (automation via GitHub Actions cron)** — pipeline files
+written, waiting on `GCP_SA_KEY` repo secret upload + first manual
+`workflow_dispatch` trigger to confirm end-to-end. Then the daily
+cron takes over and accumulates run history.
 
 **Phase 5 (Tableau dashboard)** — not started.
 
@@ -178,6 +181,80 @@ or prevented.**
   Actions cron core.
 - **Prevented**: Phase 4 turning into "stand up an orchestrator" instead
   of "wire the two commands we already have to a schedule".
+
+### 2026-09-30 — Phase 4 cron: dedicated service account, not personal `gcloud` creds
+- **Why this**: least privilege + no long-lived personal credentials
+  in CI. The GitHub Actions runner needs to submit BigQuery jobs and
+  write into `olist_raw` (append `github_metrics`) and `olist_dbt`
+  (materialize models). It does NOT need to touch billing, IAM, OS-
+  Login, GCE, or any resource outside BigQuery.
+- **Not the alternatives**:
+  - Reusing my personal `gcloud auth application-default` credentials
+    via a leaked keyfile — grants effectively `roles/owner`, would
+    give CI enough power to delete the project or change billing.
+    Wildly disproportionate to what the workflow does.
+  - Workload Identity Federation (short-lived tokens, no long-lived
+    key at all) — genuinely better than a keyfile in the long run,
+    but the setup involves a Workload Identity Pool + provider on
+    the GCP side and a `google-github-actions/auth@v2` provider
+    config. Deferred as an improvement; the current keyfile approach
+    is documented as "acceptable, upgrade path known".
+- **What the SA can do**: exactly
+  `roles/bigquery.jobUser` + `roles/bigquery.dataEditor`, project-
+  scoped. `bigquery.dataEditor` was chosen over dataset-scoped IAM
+  because we own only two datasets on this project (`olist_raw`,
+  `olist_dbt`) and both are targets — dataset-scoped bindings would
+  be strictly more setup for no additional security surface reduction.
+- **Key handling**: JSON key created via `gcloud iam
+  service-accounts keys create` into the session scratchpad (mode
+  0600, outside the repo, gitignored by the `*.sa.json` pattern from
+  the initial commit), then uploaded manually to the repo's
+  `GCP_SA_KEY` Actions secret. Never committed. Rotation plan:
+  regenerate every 90 days or immediately on any suspicious CI log,
+  update the secret, `gcloud iam service-accounts keys delete` the
+  old one.
+
+### 2026-09-30 — Sandbox quota vs a daily scheduled job — plenty of headroom
+- **Question**: does a daily automated run risk blowing through
+  BigQuery Sandbox's 1 TiB/month query quota or 10 GiB storage limit?
+- **Estimate per run**:
+  - `github_metrics` append: ~3 rows × ~200 B ≈ 600 B written; 0
+    bytes scanned (LOAD, not query).
+  - `dbt run` full DAG (14 models: 6 staging + 4 intermediate + 4
+    marts, tables materialized): each `CREATE OR REPLACE TABLE` reads
+    its inputs (staging reads ~120 MB total from raw once,
+    intermediate re-reads ~120 MB, marts re-read the intermediates
+    ~10 MB). Rough upper bound ~250 MB scanned per run.
+- **Monthly totals**: 30 × 250 MB ≈ 7.5 GB scanned/month (0.7% of
+  1 TiB) and ≤ 300 MB storage. Both limits are ~100× headroom.
+- **Sandbox 60-day table expiration**: doesn't bite here because
+  every table is recreated on every daily run (`table` materialization
+  = `CREATE OR REPLACE TABLE`) — expiration is reset each time.
+- **Kept unchanged**: no switch to billing needed for Phase 4. If
+  future phases push scan volume past ~50% of quota (a scenario
+  that would require ~15× today's DAG size), attach a billing account
+  and remove the sandbox flag — recorded as a threshold, not a plan.
+
+### 2026-09-30 — Cron schedule: `0 6 * * *` (06:00 UTC daily)
+- **Why this slot**: 06:00 UTC lands in the trough between the two
+  busiest cron slots on shared GitHub Actions runners (00:00 UTC
+  and top-of-hour minute-0 slots). Fewer contended runners →
+  smaller drift between scheduled and actual fire time (GitHub docs
+  warn cron can be delayed 10–30 min during peak load).
+- **Why daily, not hourly/weekly**: PROJECT_PLAN §3.2 says "daily";
+  GitHub repo stars/forks don't change fast enough to warrant more
+  frequent polling, and less-frequent (weekly) would take too long
+  to accumulate the "visible run history over actual elapsed weeks"
+  that the Definition of Done requires.
+- **Not the alternatives**: `0 0 * * *` (top-of-day UTC — the most
+  contested cron slot on GH); `0 12 * * *` (busy US morning);
+  `0 3 * * *` (fine, but arbitrary — 06:00 also happens to be a
+  reasonable "check-in time" for a Europe-based owner).
+- **Known GitHub gotcha**: scheduled workflows on repos that see no
+  push activity for 60 days are automatically disabled. This project
+  is still receiving frequent commits; if activity ever drops for
+  ~50 days, the workflow needs a no-op push to keep the schedule
+  alive. Logged so we don't forget the next time we come back to it.
 
 ### 2026-09-30 — Pushed to GitHub over HTTPS + PAT (credential.helper store)
 - **Why this**: fastest path from zero-remote to a live public URL. HTTPS

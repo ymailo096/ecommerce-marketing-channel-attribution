@@ -1,0 +1,27 @@
+# dbt profile used ONLY by .github/workflows/daily.yml, via
+# DBT_PROFILES_DIR=. inside the `dbt/` working directory.
+#
+# Local dev reads ~/.dbt/profiles.yml with target `dev` instead —
+# both files declare `ecommerce_attribution:` but dbt only reads
+# one profiles.yml per invocation (via DBT_PROFILES_DIR), so there
+# is no merge / conflict.
+#
+# Auth: `google-github-actions/auth@v2` in the workflow writes a
+# service-account keyfile to disk and points
+# GOOGLE_APPLICATION_CREDENTIALS at it. dbt then reads the path via
+# env_var below. The service account is `github-actions-runner@…`
+# with only `roles/bigquery.jobUser` + `roles/bigquery.dataEditor`
+# (see PROJECT_LOG's Phase-4 decision entry).
+ecommerce_attribution:
+  target: ci
+  outputs:
+    ci:
+      type: bigquery
+      method: service-account
+      keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"
+      project: ecommerce-channel-attribution
+      dataset: olist_dbt
+      location: EU
+      threads: 4
+      timeout_seconds: 300
+      priority: interactive
