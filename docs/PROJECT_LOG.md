@@ -195,6 +195,40 @@ or prevented.**
 - **Prevented**: Phase 4 turning into "stand up an orchestrator" instead
   of "wire the two commands we already have to a schedule".
 
+### 2026-09-30 — `docs/` audit: removed `bigquery_setup.md`, trimmed `kaggle_download.md`
+
+- **Removed `docs/bigquery_setup.md`** (~200 lines, planning-era doc
+  written before Phase 1). Every decision it discussed is now in
+  this file's decision log (sandbox vs billing, EU region, local
+  auth path, dedicated CI service account, Workload Identity
+  Federation as future upgrade). Every how-to it contained was
+  either duplicate (venv/dbt-bigquery install → README's
+  "Run it locally"; auth verification one-liner → the `bq ls`
+  sanity check in the playbook) or actively **misleading given
+  current state** — §1 said "billing must be enabled, BigQuery
+  refuses to run queries with no billing account attached", the
+  exact opposite of the sandbox path we took; §5's dbt profile
+  skeleton used `dataset: olist_staging`, the discarded
+  per-layer-datasets pattern, not the `olist_dbt` single-dataset
+  we shipped. Keeping the file would force any reader to reconcile
+  two versions of the truth — the goal of this pass was one clear
+  decision log, so deleted.
+- **Trimmed `docs/kaggle_download.md`**: dropped the
+  "Why not the Kaggle API?" section (that rationale lives here, in
+  the `Kaggle download stays manual` decision entry, and having
+  it in two places invites drift). Also fixed one stale claim —
+  the file said `.gitignore` excludes `data/*.csv` but the actual
+  pattern is `data/**/*.csv` with an explicit exception for
+  `data/tableau_export/*.csv`, so the file now says that instead.
+  What remains is a pure how-to: the six-step manual download.
+- **Kept as-is**: `docs/PROJECT_BRIEF.md` (fixed brief),
+  `docs/PROJECT_LOG.md` (this file), `docs/tableau_setup.md`
+  (Phase-5 how-to, distinct from anything in this file).
+- **README's "What's where" table**: dropped the
+  `docs/bigquery_setup.md` row and added a
+  `docs/tableau_setup.md` row that was missing from earlier
+  revisions.
+
 ### 2026-09-30 — dbt tests added; CI now runs `dbt test` after `dbt run`
 - **Why this**: previously the (channel, month) uniqueness on each
   mart was verified once, manually, before the ROAS join went in.

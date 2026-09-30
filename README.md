@@ -205,7 +205,7 @@ PROJECT_PLAN.md §3.2.
 | `docs/PROJECT_LOG.md`             | Decision log + rule-of-three log + current status          |
 | `CLAUDE.md`                       | Short pointer to the two above (Claude Code auto-loads this) |
 | `docs/kaggle_download.md`         | Manual Olist download steps                                |
-| `docs/bigquery_setup.md`          | BigQuery / gcloud setup notes                              |
+| `docs/tableau_setup.md`           | Tableau Public dashboard build + publish                   |
 | `.claude/skills/`                 | Locked metric definitions + verification discipline        |
 | `sql/adhoc/`                      | One-off verified queries (rule-of-three step 1)            |
 | `dbt/models/`                     | staging → intermediate → marts (rule-of-three step 2)      |

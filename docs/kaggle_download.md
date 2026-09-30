@@ -1,8 +1,9 @@
-# Manual Olist download (no Kaggle CLI needed)
+# Manual Olist download
 
-We don't have Kaggle API credentials set up on this machine, and the
-project shouldn't strictly need automation for the download — it's a
-one-off. Manual steps below take ~2 minutes.
+Olist is a static snapshot on Kaggle, not a live source; the project
+downloads it by hand once. Rationale for skipping the Kaggle CLI is
+in `docs/PROJECT_LOG.md` under the `Kaggle download stays manual`
+decision entry.
 
 ## Steps
 
@@ -29,8 +30,9 @@ one-off. Manual steps below take ~2 minutes.
    these — orders, order_items, order_payments, customers — but you can
    safely leave all nine in `data/olist/`; the extras are ignored.
 
-5. `.gitignore` already excludes `data/*.csv`, so the CSVs won't be
-   committed.
+5. `.gitignore` excludes `data/**/*.csv` (with an explicit exception
+   for `data/tableau_export/*.csv`, which we do commit as snapshots
+   — see `docs/tableau_setup.md`). Olist CSVs stay local.
 
 ## Sanity check
 
@@ -45,17 +47,3 @@ ls data/olist/olist_orders_dataset.csv \
 
 All four paths should exist. If any is missing, the unzip put the files
 elsewhere — move them into `data/olist/` and re-run the check.
-
-## Why not the Kaggle API?
-
-Automating the download via `pip install kaggle` + `kaggle datasets
-download olistbr/brazilian-ecommerce` needs a `~/.kaggle/kaggle.json`
-API token, which:
-
-- Is a long-lived credential I can't create on your behalf.
-- Would sit next to the repo for a benefit (one-time re-download) that
-  doesn't recur — Olist is a static snapshot, not a live source.
-
-If we later need a fresh copy programmatically (e.g. from CI), the
-Kaggle CLI can be set up then; for now, the manual download is simpler
-and safer.
