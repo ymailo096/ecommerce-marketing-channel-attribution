@@ -34,10 +34,11 @@ all with mart-vs-ad-hoc parity for 2017-11.
 
 **Phase 3 (A/B test)** — not started.
 
-**Phase 4 (automation via GitHub Actions cron)** — pipeline files
-written, waiting on `GCP_SA_KEY` repo secret upload + first manual
-`workflow_dispatch` trigger to confirm end-to-end. Then the daily
-cron takes over and accumulates run history.
+**Phase 4 (automation via GitHub Actions cron)** — first successful
+end-to-end run at 2026-09-30 12:49:34 UTC (see rule-of-three log
+under GitHub Actions automation for exact run URL + evidence). Daily
+cron `0 6 * * *` will accumulate the "visible schedule history over
+elapsed weeks" that the Definition of Done requires.
 
 **Phase 5 (Tableau dashboard)** — not started.
 
@@ -50,8 +51,10 @@ sync commit-by-commit rather than at the end.
    Phase 6 headline`) into README's "Key finding" section. All mart
    numbers needed for it now exist.
 2. A/B test (§3, standalone) — Python + scipy z-test / p-value.
-3. Phase 4 — GitHub Actions cron for the GitHub API pull + `dbt run`.
-4. Phase 5 — Tableau Public dashboard over the four marts.
+3. Phase 5 — Tableau Public dashboard over the four marts.
+4. Passive: let the cron accumulate ~2+ weeks of visible run history
+   for the Definition of Done. Nothing to do in code — just calendar
+   time.
 
 ---
 
@@ -181,6 +184,66 @@ or prevented.**
   Actions cron core.
 - **Prevented**: Phase 4 turning into "stand up an orchestrator" instead
   of "wire the two commands we already have to a schedule".
+
+### 2026-09-30 — GitHub Actions cron: verified end-to-end (Phase 4)
+
+First successful `workflow_dispatch` run of `.github/workflows/daily.yml`:
+
+- **Run**: https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733
+- **Dispatched**: 2026-09-30T12:48:55Z
+- **Completed**: 2026-09-30T12:50:13Z (78 s wall time)
+- **Conclusion**: `success` (all 7 job steps green — Checkout, Set up
+  Python, Install dependencies, Authenticate to GCP, Pull GitHub
+  metrics, dbt run, plus post-steps).
+
+Evidence the pipeline actually did the work (not just "workflow ran"):
+
+- `olist_raw.github_metrics` — 6 rows total after the CI run: 3 from
+  a local smoke test at 2026-09-30T12:23:41Z and 3 from the CI run at
+  2026-09-30T12:49:34Z. The `dbt run` step then rebuilt
+  `olist_dbt.stg_github_metrics` with the same 6 rows (verified via
+  `bq query` COUNT + MIN/MAX fetched_at).
+- **Live-data smoke signal** (verify-rigorously §1 — don't
+  pattern-match, re-derive): between the two pulls,
+  `astral-sh/uv` dropped from 90,313 → 90,312 stars and
+  `dbt-labs/dbt-core` from 13,949 → 13,948 — real world movement in
+  the ~26 minutes between runs. The pipeline is genuinely reading
+  live GitHub, not caching a snapshot.
+
+Next step-3 milestone: leave the daily cron alone. The Definition of
+Done wants "visible run history over elapsed weeks" — that just
+requires calendar time, no code changes.
+
+### 2026-09-30 — Uploaded GCP_SA_KEY via GH secrets API (encrypted with libsodium), not clipboard paste
+
+- **Why this**: user's clipboard-based paste into GitHub's Secret
+  form kept getting corrupted. The first two workflow attempts
+  failed at the `Authenticate to GCP` step with `unexpected token
+  'g', "\ng~T…" is not valid JSON` — the secret stored what
+  looked like binary noise instead of the JSON we tried to paste.
+  Diagnosis was that between our `pbcopy` (which reliably placed
+  the 2,423-byte JSON on the clipboard, verified via
+  round-trip `diff`) and the user's Cmd+V in the browser, some
+  other event overwrote the clipboard (in one case the literal
+  string `Cmd+A` from a Claude message was found on the clipboard
+  afterwards).
+- **What we did instead**: uploaded the secret via
+  `PUT /repos/.../actions/secrets/GCP_SA_KEY`, encrypting the JSON
+  with libsodium's sealed-box using the repo's public key (fetched
+  from `GET /actions/secrets/public-key`). Same net effect as a
+  browser paste — GitHub only ever sees the ciphertext, decrypts
+  it internally to inject into workflow runs — but the plaintext
+  never touches the clipboard on the way there.
+- **Not the alternatives**: reopening the paste with hand-holding
+  (already failed twice with the same corruption); installing
+  `gh secret set` (would need another CLI install, and gh's own
+  secret-set command does the same libsodium encryption internally,
+  so nothing changes on the wire).
+- **Security note**: PAT with `repo` scope was used to write the
+  secret. PyNaCl (Python binding of libsodium) added to `.venv`
+  for this. The SA JSON stays on disk only at
+  `~/…/scratchpad/github-actions-runner.sa.json` (mode 0600,
+  gitignored by `*.sa.json` in `.gitignore`).
 
 ### 2026-09-30 — Phase 4 cron: dedicated service account, not personal `gcloud` creds
 - **Why this**: least privilege + no long-lived personal credentials
@@ -333,7 +396,7 @@ N without evidence that step N-1 was correct.
 |------|-------|----------|
 | 1 — ad hoc verified | ✅ 2026-09-29 | [`sql/adhoc/cac_by_channel_one_month.sql`](../sql/adhoc/cac_by_channel_one_month.sql) run via `bq query` for 2017-11 (Olist's Black Friday peak). See table below. |
 | 2 — dbt models | ✅ 2026-09-30 | `dbt run` builds `olist_dbt.mart_cac_by_channel`; a `WHERE month = '2017-11-01'` slice matches the step-1 numbers **exactly** on all four channels (counts, spend, CAC to 2 dp). Grain reduction happens in `int_customer_channel` (per customer_unique_id) then `int_new_customers_by_channel_month` (per channel+month), before the mart's 1:1 join to `stg_ad_spend`. |
-| 3 — automated | ⬜ | Blocked on Phase 4 (GH Actions cron). |
+| 3 — automated | ✅ 2026-09-30 | Rebuilt by the daily GH Actions cron's `dbt run` step. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
 
 Verified 2017-11 CAC snapshot (both ad hoc and mart):
 
@@ -354,7 +417,7 @@ Organic is 17× cheaper than Google Ads on CAC — this is the exact
 |------|-------|----------|
 | 1 — ad hoc verified | ✅ 2026-09-30 | [`sql/adhoc/repeat_rate_by_channel_one_month.sql`](../sql/adhoc/repeat_rate_by_channel_one_month.sql) run for 2017-11 cohort. Cohort sizes match CAC/LTV exactly (2907/1920/1386/1091). Table below. |
 | 2 — dbt | ✅ 2026-09-30 | `int_customer_repeat_90d` (per customer_unique_id 0/1 flag) + `mart_repeat_rate_by_channel` (per channel, cohort_month). Same (channel, month) grain as the CAC and LTV marts. Slice at `WHERE month = '2017-11-01'` matches step-1 numbers exactly (cohort_size, repeaters, rate). |
-| 3 — automated | ⬜ |
+| 3 — automated | ✅ 2026-09-30 | Rebuilt by the daily GH Actions cron's `dbt run` step. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
 
 Verified 2017-11 repeat-rate snapshot:
 
@@ -379,7 +442,7 @@ mean, and the tiny gaps are noise, not signal.
 |------|-------|----------|
 | 1 — ad hoc verified | ✅ 2026-09-30 | [`sql/adhoc/ltv_by_channel_one_month.sql`](../sql/adhoc/ltv_by_channel_one_month.sql) run for 2017-11 cohort. Cohort sizes match the CAC counts exactly (same customer set — the query re-derives channel via the same FARM_FINGERPRINT hash). Table below. |
 | 2 — dbt | ✅ 2026-09-30 | `int_customer_ltv_90d` (per customer_unique_id, sum of payments within 90d of first order) + `mart_ltv_by_channel` (per channel, first_purchase_month). Grain deliberately matches `mart_cac_by_channel` so ROAS composes trivially. Slice at `WHERE month = '2017-11-01'` matches the step-1 numbers exactly (cohort_size, ltv_total_brl, ltv_per_customer_brl all identical). |
-| 3 — automated | ⬜ |
+| 3 — automated | ✅ 2026-09-30 | Rebuilt by the daily GH Actions cron's `dbt run` step. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
 
 Verified 2017-11 LTV-proxy snapshot:
 
@@ -409,7 +472,7 @@ Phase 6 headline`.
 |------|-------|----------|
 | 1 — ad hoc verified | ✅ 2026-09-30 | Hand-computed for 2017-11 all four channels (numerators/denominators shown in the ROAS commit message and below), then cross-checked against the mart to 4 decimal places. |
 | 2 — dbt | ✅ 2026-09-30 | `mart_roas_by_channel` (3-way INNER JOIN of CAC, LTV, repeat marts on (channel, month) — 1:1:1, no aggregation). Uniqueness of (channel, month) in each input was verified empirically first (CAC 104/104, LTV 91/91, repeat 91/91), so the join cannot fan out. Result count 91 matches the min of the three input keysets. |
-| 3 — automated | ⬜ |
+| 3 — automated | ✅ 2026-09-30 | Rebuilt by the daily GH Actions cron's `dbt run` step. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
 
 Verified 2017-11 ROAS snapshot (side-by-side hand vs mart, per
 `verify-rigorously` skill §4):
