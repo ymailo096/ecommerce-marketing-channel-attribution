@@ -1,14 +1,70 @@
 # E-commerce Marketing Channel Attribution
 
-Which marketing channel is actually most efficient once you look past
-the cost of the first order — i.e. how much revenue does a customer
-generate over the following months after acquisition?
+**Business question:** which marketing channel is actually most
+efficient once you look past the cost of the first order — i.e. how
+much revenue does a customer generate over the following months after
+acquisition? Every metric and every SQL model in this project exists
+to answer that one question.
 
-Every metric and every SQL model in this project exists to answer
-that one question.
+CAC / LTV / ROAS by acquisition channel on Olist data — focus on
+grain reconciliation (ad spend at channel-month vs. orders at
+customer level) and why a cheap CAC can be a data-quality red flag,
+not a growth signal.
 
-**Stack:** BigQuery · dbt · Python (stdlib + `google-cloud-bigquery`) ·
-GitHub Actions (cron) · Tableau Public
+> **Channel assignment and `ad_spend` are synthetic** (Olist doesn't
+> ship either — channel is a deterministic FARM_FINGERPRINT hash of
+> `customer_unique_id` into 4 weighted buckets, `ad_spend` is a
+> seeded per-`(channel, month)` table). Orders, customers, and
+> payments are the real anonymized Brazilian marketplace data.
+
+## Verified 2017-11 snapshot (Olist's Black Friday peak)
+
+| Channel                 | New customers | Spend (BRL) | CAC (BRL) | LTV/customer (BRL) | Repeat rate | ROAS   |
+|-------------------------|--------------:|------------:|----------:|-------------------:|------------:|-------:|
+| Organic                 |         2,907 |    1,149.88 |      0.40 |             165.65 |       1.96% | 418.78 |
+| Email/Referral          |         1,091 |    1,688.12 |      1.55 |             158.09 |       1.74% | 102.17 |
+| Facebook/Instagram Ads  |         1,386 |    6,145.24 |      4.43 |             158.24 |       2.09% |  35.69 |
+| Google Ads              |         1,920 |   12,932.00 |      6.74 |             164.99 |       2.34% |  24.50 |
+
+Every number here was verified twice: once via a hand-computed ad hoc
+SQL query, then again as the same slice from the corresponding dbt
+mart — both agree to at least 4 decimal places. Full evidence in
+[`docs/PROJECT_LOG.md`](docs/PROJECT_LOG.md).
+
+## Finding
+
+With a channel-neutral customer base, **ROAS is effectively driven
+by CAC alone**. Organic looks ~17× cheaper than Google Ads on CAC.
+LTV per customer is statistically flat across channels (158–166 BRL,
+~5% spread — well inside sampling noise for cohorts of
+1,091–2,907). This flatness is by design: channel is a deterministic
+hash of `customer_unique_id`, independent of any purchase behaviour,
+so per-channel LTV averages have to converge to the population mean.
+Do **not** infer that Organic customers are better or worse than
+Google Ads customers — statistically they're the same.
+
+## Recommendation
+
+The right first business step is **not** "shift budget into
+Organic". It is verifying whether channel-level spend is
+under-reported at the source. A near-zero CAC on any paid-looking
+channel is a data-quality red flag before it is an investment
+thesis. Don't move budget until you know Organic's line item
+actually captures its cost (SEO tools, content ops, referral
+bonuses, brand halo — all of which have real vendor invoices in a
+real business, none of which are captured if "Organic" defaults to
+zero-spend in the source system).
+
+## Stack
+
+BigQuery · dbt · Python (stdlib + `google-cloud-bigquery`) · GitHub
+Actions (daily cron) · Tableau Public
+
+## Live dashboard
+
+*(Tableau Public link — placeholder until Phase 5 lands.)*
+
+---
 
 ## Architecture
 
@@ -16,13 +72,13 @@ GitHub Actions (cron) · Tableau Public
         ┌─────────────────────────┐      ┌────────────────────────┐
         │ Olist Kaggle CSVs (raw) │      │ GitHub API (daily pull)│
         └────────────┬────────────┘      └───────────┬────────────┘
-                     │  bq load                       │  Python + cron
+                     │  bq load                       │  GH Actions cron
                      ▼                                ▼
         ┌─────────────────────────────────────────────────────────┐
         │            BigQuery — dataset `olist_raw`               │
         │  customers, orders, order_items, order_payments,        │
         │  ad_spend (synthetic, seeded, channel+month grain),     │
-        │  github_metrics                                         │
+        │  github_metrics (append-only time series)               │
         └───────────────────────────┬─────────────────────────────┘
                                     │  dbt run
                                     ▼
@@ -31,18 +87,18 @@ GitHub Actions (cron) · Tableau Public
         │                                                         │
         │  staging       stg_customers, stg_orders,               │
         │                stg_order_items, stg_order_payments,     │
-        │                stg_ad_spend  (1:1 with source)          │
+        │                stg_ad_spend, stg_github_metrics         │
         │                                                         │
         │  intermediate  int_customer_channel                     │
         │                  (per customer_unique_id)               │
         │                int_new_customers_by_channel_month       │
-        │                  (per channel+month)                    │
+        │                int_customer_ltv_90d                     │
+        │                int_customer_repeat_90d                  │
         │                                                         │
         │  marts         mart_cac_by_channel                      │
-        │                  (per channel+month, joined 1:1)        │
-        │                mart_ltv_by_channel        (Phase 2)     │
-        │                mart_repeat_rate_by_channel (Phase 2)    │
-        │                mart_roas_by_channel        (Phase 2)    │
+        │                mart_ltv_by_channel                      │
+        │                mart_repeat_rate_by_channel              │
+        │                mart_roas_by_channel                     │
         └───────────────────────────┬─────────────────────────────┘
                                     │
                                     ▼
@@ -50,14 +106,17 @@ GitHub Actions (cron) · Tableau Public
                           (link once Phase 5 lands)
 ```
 
-The synthetic `ad_spend` table lives at **channel+month grain — deliberately
-coarser than orders**. Every downstream model that touches it must first
-aggregate customer/order rows to channel+month; joining spend directly
-onto order-level rows is the fan-out trap this project is designed to
-teach avoiding. The intermediate layer is where that grain reconciliation
-happens on purpose, before the mart.
+The synthetic `ad_spend` table lives at **channel+month grain —
+deliberately coarser than orders**. Every downstream model that
+touches it must first aggregate customer/order rows to channel+month;
+joining spend directly onto order-level rows is the fan-out trap
+this project is designed to teach avoiding. The intermediate layer
+is where that grain reconciliation happens on purpose, before the
+mart.
 
-## Metrics (locked — see `.claude/skills/marketing-metrics/SKILL.md`)
+## Locked metric formulas
+
+See [`.claude/skills/marketing-metrics/SKILL.md`](.claude/skills/marketing-metrics/SKILL.md).
 
 | # | Metric                     | Formula                                                                                     |
 |---|----------------------------|---------------------------------------------------------------------------------------------|
@@ -65,31 +124,16 @@ happens on purpose, before the mart.
 | 2 | Repeat purchase rate (90d) | % of channel's first-month cohort with a 2nd order within 90 days                           |
 | 3 | LTV-proxy (90d)            | `SUM(payment_value)` within 90 days of each customer's first order, aggregated by channel   |
 | 4 | ROAS                       | `LTV-proxy / CAC`                                                                           |
-| 5 | A/B test                   | Simulated experiment, z-test / p-value in Python (standalone; never mixed into 1–4)         |
-
-## Key finding
-
-> *(Placeholder — filled once Phase 2 is complete and the four marts
-> are all populated. Expected shape: "Channel X looks best on CAC but
-> worst on repeat purchase rate and LTV, so its real ROAS is lower
-> than channel Y — recommend reallocating N% of budget from X to Y".
-> The 2017-11 CAC snapshot in `docs/PROJECT_LOG.md` already hints at
-> Organic's suspicious cheapness on CAC alone.)*
-
-## Live dashboard
-
-> *(Tableau Public link — placeholder until Phase 5.)*
 
 ## Run it locally
 
 Prereqs: a GCP project with BigQuery API enabled and a dataset
 `olist_raw` in region **EU**, plus `gcloud` CLI authenticated
-(`gcloud auth login` for `bq` + `gcloud auth application-default login`
-for dbt / Python libraries).
-
-The Olist CSVs are downloaded manually from
+(`gcloud auth login` for `bq` + `gcloud auth application-default
+login` for dbt / Python libraries). The Olist CSVs are downloaded
+manually from
 [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
-into `data/olist/`. See [`docs/kaggle_download.md`](docs/kaggle_download.md).
+into `data/olist/` (see [`docs/kaggle_download.md`](docs/kaggle_download.md)).
 
 ```bash
 # 1. Load raw Olist tables (idempotent thanks to --replace).
@@ -112,12 +156,22 @@ bq load --source_format=CSV --skip_leading_rows=1 --location=EU --replace \
 
 # 3. Rebuild the dbt marts.
 source .venv/bin/activate
-cd dbt && dbt run           # materializes 8 tables in olist_dbt
+cd dbt && dbt run           # materializes 13 tables in olist_dbt
 
 # 4. Ad hoc verification query (rule-of-three step 1 — matches mart exactly).
 bq query --use_legacy_sql=false --location=EU --format=pretty \
   --nouse_cache < sql/adhoc/cac_by_channel_one_month.sql
 ```
+
+## Automation
+
+Daily cron in [`.github/workflows/daily.yml`](.github/workflows/daily.yml)
+pulls fresh GitHub metrics + re-runs the whole dbt DAG at 06:00 UTC
+against BigQuery, authenticating with a dedicated least-privilege
+service account (`roles/bigquery.jobUser` +
+`roles/bigquery.dataEditor`, nothing else). The visible run history
+on the Actions tab is the "genuinely live" evidence per
+PROJECT_PLAN.md §3.2.
 
 ## What's where
 
@@ -127,9 +181,9 @@ bq query --use_legacy_sql=false --location=EU --format=pretty \
 | `docs/PROJECT_LOG.md`             | Decision log + rule-of-three log + current status          |
 | `docs/kaggle_download.md`         | Manual Olist download steps                                |
 | `docs/bigquery_setup.md`          | BigQuery / gcloud setup notes                              |
-| `.claude/skills/marketing-metrics/` | Locked metric definitions (Claude-agent-discoverable skill) |
+| `.claude/skills/`                 | Locked metric definitions + verification discipline        |
 | `sql/adhoc/`                      | One-off verified queries (rule-of-three step 1)            |
 | `dbt/models/`                     | staging → intermediate → marts (rule-of-three step 2)      |
-| `python/`                         | ad_spend generator, GitHub API pull (Phase 4)              |
-| `.github/workflows/`              | Cron schedule (Phase 4)                                    |
+| `python/`                         | ad_spend generator, GitHub API pull                        |
+| `.github/workflows/`              | Daily cron (rule-of-three step 3)                          |
 | `data/olist/`, `data/synthetic/`  | Local CSVs (gitignored)                                    |

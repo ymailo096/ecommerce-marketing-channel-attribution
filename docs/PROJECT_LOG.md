@@ -185,6 +185,44 @@ or prevented.**
 - **Prevented**: Phase 4 turning into "stand up an orchestrator" instead
   of "wire the two commands we already have to a schedule".
 
+### 2026-09-30 — README restructured for a 30-second skim; repo first-screen review
+- **README** rewritten with results first: business question → 2017-11
+  numbers table → finding → recommendation → stack → dashboard
+  placeholder, with architecture/how-to-run moved below the fold.
+  Two explicit fixes:
+  - Removed any "channel attribution engine" style framing. The one-
+    liner subtitle now says exactly what this is (a
+    grain-reconciliation + data-quality demonstration on Olist), and
+    a callout right underneath states in one line that channel
+    assignment and `ad_spend` are synthetic while orders/customers/
+    payments are real.
+  - Recorded the headline as the exact wording direction called for:
+    "with a channel-neutral customer base, ROAS is driven by CAC
+    alone; Organic looks ~17× cheaper, but the right first business
+    step is verifying whether channel-level spend is under-reported,
+    not shifting budget." No claim that Organic customers are better
+    or worse on LTV — they're statistically the same and the README
+    says so.
+- **Repo first-screen review**: the committed top-level entries at
+  push time are `.claude/`, `.github/`, `data/`, `dbt/`, `docs/`,
+  `python/`, `sql/`, plus `CLAUDE.md`, `README.md`,
+  `requirements.txt`, `.env.example`, `.gitignore`. Decision:
+  **leave as-is**. Rationale:
+  - `.claude/skills/` files (`marketing-metrics/SKILL.md`,
+    `verify-rigorously/SKILL.md`) are genuine project documentation —
+    the locked metric formulas and verification discipline that every
+    SQL model defers to. Moving them under `docs/` would break the
+    Claude-Code auto-loading convention (`.claude/skills/*/SKILL.md`)
+    without adding any human-reader value.
+  - Added `.claude/README.md` so a reviewer clicking that folder on
+    GitHub gets a one-line "what's this?" answer instead of a bare
+    listing of `skills/`.
+  - `CLAUDE.md` at root is a well-known convention in AI-assisted
+    repos; `README.md`'s "What's where" table already labels it as
+    the fixed project brief. Not renaming.
+  - Everything else (`.github/`, `requirements.txt`, `.env.example`,
+    `.gitignore`) is standard.
+
 ### 2026-09-30 — GitHub Actions cron: verified end-to-end (Phase 4)
 
 First successful `workflow_dispatch` run of `.github/workflows/daily.yml`:
