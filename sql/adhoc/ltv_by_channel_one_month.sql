@@ -1,5 +1,5 @@
 -- Ad hoc LTV-proxy (90-day window) by channel for the 2017-11 cohort.
--- CLAUDE.md §10 rule-of-three step 1: verified manually before any
+-- PROJECT_BRIEF.md §10 rule-of-three step 1: verified manually before any
 -- dbt model gets built on top. Nothing here is persisted — SELECT
 -- only, Sandbox-safe.
 --

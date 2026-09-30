@@ -3,7 +3,7 @@
 Loads exactly the four tables the CAC analysis needs — orders,
 order_items, order_payments, customers. Other Olist tables (products,
 sellers, geolocation, reviews) are ignored on purpose: the locked scope
-in CLAUDE.md §5 doesn't use them.
+in PROJECT_BRIEF.md §5 doesn't use them.
 
 Uses `load_table_from_file` (batch LOAD job) — NOT `CREATE TABLE AS
 SELECT`, which requires billing (BigQuery Sandbox blocks CTAS).

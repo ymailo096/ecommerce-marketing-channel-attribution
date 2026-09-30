@@ -1,7 +1,7 @@
 """Generate the synthetic `ad_spend` table and load it into `olist_raw`.
 
 Grain: (channel, month) — deliberately COARSER than order-level rows.
-This mismatch is the whole point (CLAUDE.md §3.3): joining `ad_spend`
+This mismatch is the whole point (PROJECT_BRIEF.md §3.3): joining `ad_spend`
 directly onto orders would fan out spend across every order row and
 silently inflate CAC. Every metric that reads `ad_spend` must first
 aggregate customers/orders to (channel, month) and only then join.

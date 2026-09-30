@@ -1,7 +1,7 @@
 # Project Log
 
 Running narrative for this project — the "why" behind the code. The
-README is the "what" and stays terse. `CLAUDE.md` holds the fixed
+README is the "what" and stays terse. `docs/PROJECT_BRIEF.md` holds the fixed
 brief and does not change; this file changes on every meaningful step.
 Single source of truth: when this and any other doc disagree, this
 file wins.
@@ -188,6 +188,31 @@ or prevented.**
   Actions cron core.
 - **Prevented**: Phase 4 turning into "stand up an orchestrator" instead
   of "wire the two commands we already have to a schedule".
+
+### 2026-09-30 — Moved `CLAUDE.md` → `docs/PROJECT_BRIEF.md` (kept a 3-line pointer at root)
+- **Why this**: after the first-screen review, the biggest single
+  file at the repo root (~7 KB of AI-agent-facing brief) was still
+  the first thing an HR skimmer's eye lands on before README/
+  actual project code. Moving the substantive content under `docs/`
+  gets it out of the top-level file listing while keeping it a
+  named, browseable file. The new root `CLAUDE.md` is three
+  paragraphs pointing at `docs/PROJECT_BRIEF.md` +
+  `docs/PROJECT_LOG.md` + `.claude/skills/`.
+- **Why not delete `CLAUDE.md` entirely**: Claude Code auto-loads
+  `CLAUDE.md` (and only `CLAUDE.md`) from repo root as project
+  context; deleting it would silently break future sessions'
+  ability to find the brief. The stub pointer preserves auto-load
+  behaviour with near-zero visual weight.
+- **Not the alternatives**: renaming to `PROJECT_CONTEXT.md`
+  (still at root, still on the first screen — solves nothing);
+  moving under `docs/` without a stub (breaks Claude Code auto-load).
+- **Follow-through**: `sed`-updated live `PROJECT_BRIEF.md §X`
+  references in `sql/adhoc/*.sql`, `python/*.py`, `README.md`, and
+  the intro paragraph of `PROJECT_LOG.md`. Historical decision-log
+  entries that discussed "CLAUDE.md" (including the earlier
+  first-screen entry that said "leave as-is") were **left as-is** —
+  they describe the state at the time they were written and get
+  superseded by this new entry, not silently rewritten.
 
 ### 2026-09-30 — README restructured for a 30-second skim; repo first-screen review
 - **README** rewritten with results first: business question → 2017-11
