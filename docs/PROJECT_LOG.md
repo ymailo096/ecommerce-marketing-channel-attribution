@@ -21,17 +21,19 @@ file wins.
   (stdlib, seed 42) and loaded to `olist_raw.ad_spend`.
 - GitHub API pull deferred to Phase 4.
 
-**Phase 2 (modeling)** — CAC + LTV paths complete. Repeat-rate and
-ROAS marts still to write.
+**Phase 2 (modeling)** — CAC + LTV + repeat rate complete. ROAS mart
+is the only remaining composition.
 - dbt project scaffolded at `dbt/`, target dataset `olist_dbt`, all
   models materialize as `table`.
-- 10 models exist and `dbt run` is green:
-  staging (5) → intermediate (3: `int_customer_channel`,
-  `int_new_customers_by_channel_month`, `int_customer_ltv_90d`) →
-  marts (2: `mart_cac_by_channel`, `mart_ltv_by_channel`).
-- `mart_ltv_by_channel` shares grain with `mart_cac_by_channel` on
-  purpose — a future `mart_roas_by_channel` is a 3-line join on
-  (channel, month).
+- 12 models exist and `dbt run` is green:
+  staging (5) → intermediate (4: `int_customer_channel`,
+  `int_new_customers_by_channel_month`, `int_customer_ltv_90d`,
+  `int_customer_repeat_90d`) →
+  marts (3: `mart_cac_by_channel`, `mart_ltv_by_channel`,
+  `mart_repeat_rate_by_channel`).
+- All three marts share the same (channel, first_purchase_month)
+  grain by construction — a future `mart_roas_by_channel` is a 3-way
+  join on that composite key with no aggregation.
 
 **Phase 3 (A/B test)** — not started.
 
@@ -43,11 +45,10 @@ ROAS marts still to write.
 sync commit-by-commit rather than at the end.
 
 ### Immediate next steps
-1. Repeat purchase rate — ad hoc (step 1) then dbt mart (step 2).
-2. Compose `mart_roas_by_channel` = ltv_per_customer_brl /
-   cac_brl per (channel, cohort_month) — trivial join now that both
-   sides share grain.
-3. Write Phase 6 headline (the "data-quality-red-flag" framing —
+1. Compose `mart_roas_by_channel` = ltv_per_customer_brl /
+   cac_brl per (channel, cohort_month) — 3-way join on (channel,
+   month) across the three existing marts, no aggregation.
+2. Write Phase 6 headline (the "data-quality-red-flag" framing —
    see decision-log entry `Channel-LTV flatness is the actual
    Phase 6 headline`) into README's "Key finding" section.
 
@@ -273,11 +274,29 @@ Organic is 17× cheaper than Google Ads on CAC — this is the exact
 "misleading metric" the LTV/ROAS marts are designed to expose next.
 
 ### Repeat purchase rate (90-day cohort)
-| Step | State |
-|------|-------|
-| 1 — ad hoc | ⬜ next up |
-| 2 — dbt | ⬜ |
+
+| Step | State | Evidence |
+|------|-------|----------|
+| 1 — ad hoc verified | ✅ 2026-09-30 | [`sql/adhoc/repeat_rate_by_channel_one_month.sql`](../sql/adhoc/repeat_rate_by_channel_one_month.sql) run for 2017-11 cohort. Cohort sizes match CAC/LTV exactly (2907/1920/1386/1091). Table below. |
+| 2 — dbt | ✅ 2026-09-30 | `int_customer_repeat_90d` (per customer_unique_id 0/1 flag) + `mart_repeat_rate_by_channel` (per channel, cohort_month). Same (channel, month) grain as the CAC and LTV marts. Slice at `WHERE month = '2017-11-01'` matches step-1 numbers exactly (cohort_size, repeaters, rate). |
 | 3 — automated | ⬜ |
+
+Verified 2017-11 repeat-rate snapshot:
+
+| Channel                 | Cohort size | Repeaters | Repeat rate |
+|-------------------------|-------------|-----------|-------------|
+| Google Ads              | 1,920       | 45        | 2.34%       |
+| Facebook/Instagram Ads  | 1,386       | 29        | 2.09%       |
+| Organic                 | 2,907       | 57        | 1.96%       |
+| Email/Referral          | 1,091       | 19        | 1.74%       |
+
+Overall 2017-11 repeat rate = 150 / 7,304 = 2.05% — consistent with
+Olist's well-known low repeat rate (single digits). Spread across
+channels is 0.6 pp, well inside sampling noise for cohorts of
+1,091–2,907. Same "flatness is expected" logic as LTV applies:
+because channel is a random hash independent of purchase behaviour
+(PROJECT_PLAN §4), per-channel repeat rates converge to the population
+mean, and the tiny gaps are noise, not signal.
 
 ### LTV-proxy (90 days)
 
