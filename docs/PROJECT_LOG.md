@@ -47,15 +47,21 @@ under GitHub Actions automation for exact run URL + evidence). Daily
 cron `0 6 * * *` will accumulate the "visible schedule history over
 elapsed weeks" that the Definition of Done requires.
 
-**Phase 5 (Tableau dashboard)** — not started.
+**Phase 5 (Tableau dashboard)** — setup guide written at
+[`docs/tableau_setup.md`](tableau_setup.md); publish is manual
+(Tableau Desktop → Tableau Public GUI, can't headless). Waiting on
+one manual pass through the guide.
 
 **Phase 6 (docs)** — this file + README are the deliverable; kept in
 sync commit-by-commit rather than at the end.
 
 ### Immediate next steps
-1. Phase 5 — Tableau Public dashboard over the four marts (requires
-   local Tableau Desktop / Tableau Public app + publish flow — see
-   `docs/tableau_setup.md` once written).
+1. User: one manual pass through
+   [`docs/tableau_setup.md`](tableau_setup.md) — connect Tableau
+   Desktop to `olist_dbt.mart_roas_by_channel`, build a one-page
+   dashboard (KPI row + monthly line + per-channel bar + a caveat
+   annotation), publish to Tableau Public, paste the resulting URL
+   into README's "Live dashboard" section.
 2. Passive: let the cron accumulate ~2+ weeks of visible run history
    for the Definition of Done. Nothing to do in code — just calendar
    time.
@@ -221,7 +227,10 @@ or prevented.**
     partially succeeded".
 - **Verified**: local `dbt test` produces 8 tests, 8 pass (3 not_null
   on stg_ad_spend + 4 mart PK uniqueness + 1 no-exact-zero-cac).
-  CI run after this commit will re-verify the same set.
+  CI re-verified in run
+  [36719107706](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36719107706)
+  at 2026-09-30T16:06:43Z — all 8 workflow steps green including
+  the new `dbt test` step (~13 s wall time inside a 88 s total run).
 
 ### 2026-09-30 — README "Data contract / assumptions" section (near top)
 - **Why this**: the "channel is synthetic, LTV flatness is by
