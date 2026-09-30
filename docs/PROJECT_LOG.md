@@ -21,12 +21,17 @@ file wins.
   (stdlib, seed 42) and loaded to `olist_raw.ad_spend`.
 - GitHub API pull deferred to Phase 4.
 
-**Phase 2 (modeling)** — CAC path complete. LTV, repeat-rate, ROAS
-marts still to write.
+**Phase 2 (modeling)** — CAC + LTV paths complete. Repeat-rate and
+ROAS marts still to write.
 - dbt project scaffolded at `dbt/`, target dataset `olist_dbt`, all
   models materialize as `table`.
-- 8 models exist and `dbt run` is green:
-  staging (5) → intermediate (2) → marts (1 so far: `mart_cac_by_channel`).
+- 10 models exist and `dbt run` is green:
+  staging (5) → intermediate (3: `int_customer_channel`,
+  `int_new_customers_by_channel_month`, `int_customer_ltv_90d`) →
+  marts (2: `mart_cac_by_channel`, `mart_ltv_by_channel`).
+- `mart_ltv_by_channel` shares grain with `mart_cac_by_channel` on
+  purpose — a future `mart_roas_by_channel` is a 3-line join on
+  (channel, month).
 
 **Phase 3 (A/B test)** — not started.
 
@@ -38,10 +43,14 @@ marts still to write.
 sync commit-by-commit rather than at the end.
 
 ### Immediate next steps
-1. Extend intermediate + marts for LTV-proxy and repeat purchase rate.
-2. Compose `mart_roas_by_channel` = LTV-proxy / CAC by (channel,
-   cohort_month).
-3. Snapshot the finished analysis one-pager into README's "Key
+1. Repeat purchase rate — ad hoc (step 1) then dbt mart (step 2).
+2. Compose `mart_roas_by_channel` = ltv_per_customer_brl /
+   cac_brl per (channel, cohort_month) — trivial join now that both
+   sides share grain.
+3. Decide whether to introduce channel-dependent LTV so the "cheap
+   CAC channel loses on LTV" narrative can emerge (see LTV
+   rule-of-three notes below).
+4. Snapshot the finished analysis one-pager into README's "Key
    finding" section.
 
 ---
@@ -245,7 +254,7 @@ Organic is 17× cheaper than Google Ads on CAC — this is the exact
 | Step | State | Evidence |
 |------|-------|----------|
 | 1 — ad hoc verified | ✅ 2026-09-30 | [`sql/adhoc/ltv_by_channel_one_month.sql`](../sql/adhoc/ltv_by_channel_one_month.sql) run for 2017-11 cohort. Cohort sizes match the CAC counts exactly (same customer set — the query re-derives channel via the same FARM_FINGERPRINT hash). Table below. |
-| 2 — dbt | ⬜ next up |
+| 2 — dbt | ✅ 2026-09-30 | `int_customer_ltv_90d` (per customer_unique_id, sum of payments within 90d of first order) + `mart_ltv_by_channel` (per channel, first_purchase_month). Grain deliberately matches `mart_cac_by_channel` so ROAS composes trivially. Slice at `WHERE month = '2017-11-01'` matches the step-1 numbers exactly (cohort_size, ltv_total_brl, ltv_per_customer_brl all identical). |
 | 3 — automated | ⬜ |
 
 Verified 2017-11 LTV-proxy snapshot:
