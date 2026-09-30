@@ -32,7 +32,14 @@ all with mart-vs-ad-hoc parity for 2017-11.
   marts (4: `mart_cac_by_channel`, `mart_ltv_by_channel`,
   `mart_repeat_rate_by_channel`, `mart_roas_by_channel`).
 
-**Phase 3 (A/B test)** — not started.
+**Phase 3 (A/B test)** — done, one standalone script:
+[`python/ab_test_repeat_rate.py`](../python/ab_test_repeat_rate.py).
+Simulated 90-day repeat-rate lift from a hypothetical email nurture
+(control 2.05%, test 2.75%, n=5,000 per arm, seed 42). Two-proportion
+z-test in stdlib only (`math.erf` for Φ, no scipy dependency).
+Verified against scipy's `stats.norm.cdf` and against `chi2_contingency`
+without continuity correction — all three agree on z=+2.073, p=0.0382
+(**REJECT null at α=0.05**, borderline: 95% CI just excludes zero).
 
 **Phase 4 (automation via GitHub Actions cron)** — first successful
 end-to-end run at 2026-09-30 12:49:34 UTC (see rule-of-three log
@@ -46,13 +53,10 @@ elapsed weeks" that the Definition of Done requires.
 sync commit-by-commit rather than at the end.
 
 ### Immediate next steps
-1. Write Phase 6 headline (the "data-quality-red-flag" framing —
-   see decision-log entry `Channel-LTV flatness is the actual
-   Phase 6 headline`) into README's "Key finding" section. All mart
-   numbers needed for it now exist.
-2. A/B test (§3, standalone) — Python + scipy z-test / p-value.
-3. Phase 5 — Tableau Public dashboard over the four marts.
-4. Passive: let the cron accumulate ~2+ weeks of visible run history
+1. Phase 5 — Tableau Public dashboard over the four marts (requires
+   local Tableau Desktop / Tableau Public app + publish flow — see
+   `docs/tableau_setup.md` once written).
+2. Passive: let the cron accumulate ~2+ weeks of visible run history
    for the Definition of Done. Nothing to do in code — just calendar
    time.
 
