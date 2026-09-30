@@ -1,0 +1,25 @@
+name: 'ecommerce_attribution'
+version: '1.0.0'
+config-version: 2
+
+profile: 'ecommerce_attribution'
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# All models materialize as `table` (not `view`).
+# Sandbox concern (docs/status.md): sandbox blocks DML / streaming / DTS,
+# NOT CTAS/DDL. dbt's default `table` materialization uses CTAS, which
+# works in sandbox — verified 2026-09-30.
+models:
+  ecommerce_attribution:
+    +materialized: table
+    staging:
+      +tags: staging
+    intermediate:
+      +tags: intermediate
+    marts:
+      +tags: marts
