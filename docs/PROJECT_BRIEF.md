@@ -2,9 +2,6 @@
 
 > The fixed brief — scope, metrics, phases. Do not edit; live state
 > and decisions go in [`PROJECT_LOG.md`](PROJECT_LOG.md) instead.
-> This file used to live at the repo root as `CLAUDE.md`; a one-line
-> pointer stayed at the root so Claude Code still auto-loads project
-> context (see [`../CLAUDE.md`](../CLAUDE.md)).
 >
 > Whenever this brief and the log disagree, the log wins.
 

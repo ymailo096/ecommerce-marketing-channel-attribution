@@ -140,7 +140,7 @@ the mart.
 
 ## Locked metric formulas
 
-See [`.claude/skills/marketing-metrics/SKILL.md`](.claude/skills/marketing-metrics/SKILL.md).
+Also written out in full in [`docs/PROJECT_BRIEF.md §5`](docs/PROJECT_BRIEF.md).
 
 | # | Metric                     | Formula                                                                                     |
 |---|----------------------------|---------------------------------------------------------------------------------------------|
@@ -203,10 +203,8 @@ docs/PROJECT_BRIEF.md §3.2.
 |-----------------------------------|------------------------------------------------------------|
 | `docs/PROJECT_BRIEF.md`           | Fixed project brief (scope, metrics, phases — do not edit) |
 | `docs/PROJECT_LOG.md`             | Decision log + rule-of-three log + current status          |
-| `CLAUDE.md`                       | Short pointer to the two above (Claude Code auto-loads this) |
 | `docs/kaggle_download.md`         | Manual Olist download steps                                |
 | `docs/tableau_setup.md`           | Tableau Public dashboard build + publish                   |
-| `.claude/skills/`                 | Locked metric definitions + verification discipline        |
 | `sql/adhoc/`                      | One-off verified queries (rule-of-three step 1)            |
 | `dbt/models/`                     | staging → intermediate → marts (rule-of-three step 2)      |
 | `python/`                         | ad_spend generator, GitHub API pull                        |
