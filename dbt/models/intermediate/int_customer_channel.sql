@@ -9,12 +9,13 @@
 --      customer_id is unique in BOTH tables (99,441 rows in each,
 --      one-to-one relationship confirmed 2026-09-29). No fan-out.
 --
--- Channel assignment — from `marketing-metrics` skill:
+-- Channel assignment — from docs/PROJECT_BRIEF.md §4:
 --   Deterministic FARM_FINGERPRINT hash of customer_unique_id into 4
 --   buckets, weights Organic 40 / Google Ads 25 / FB-IG 20 / Email 15.
 --   Assigned to customer_unique_id, so once a buyer's channel is set
---   at their first order, it never changes on future orders. Matches
---   the "channel fixed at first-purchase month" rule in the skill.
+--   at their first order, it never changes on future orders. This
+--   matches the "channel fixed at first-purchase month" rule in the
+--   brief.
 
 {{ config(materialized='table') }}
 

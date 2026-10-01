@@ -3,7 +3,7 @@
 -- dbt model gets built on top. Nothing here is persisted — SELECT
 -- only, Sandbox-safe.
 --
--- Formula (locked by marketing-metrics skill, §"Locked metric formulas" #2):
+-- Formula (locked by docs/PROJECT_BRIEF.md §5, metric #2):
 --   Repeat purchase rate (90-day cohort) =
 --       % of a channel's first-purchase-month cohort that placed
 --       a second order within 90 days of their first order.
@@ -18,7 +18,7 @@
 -- against the CAC's new_customer_count (must match exactly:
 -- 2907/1920/1386/1091).
 --
--- Grain trace (sql-query-rigor §"Перед будь-яким JOIN"):
+-- Grain trace (standard JOIN granularity check):
 --   * `orders`    — 1 row per order (99,441).
 --   * `customers` — 1 row per customer_id (99,441). Repeat buyers
 --                   appear on multiple customer_id rows sharing the

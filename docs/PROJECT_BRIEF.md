@@ -1,6 +1,6 @@
 # E-commerce Marketing Channel Attribution — Project Brief
 
-> The fixed brief — scope, metrics, phases. Do not edit; live state
+> The fixed brief: scope, metrics, phases. Do not edit; live state
 > and decisions go in [`PROJECT_LOG.md`](PROJECT_LOG.md) instead.
 >
 > Whenever this brief and the log disagree, the log wins.
@@ -9,8 +9,8 @@
 
 An online store spends budget across several marketing channels. Which
 channel is actually most efficient once you look past the cost of the first
-order — i.e. how much revenue does a customer generate over the following
-months after acquisition?
+order (i.e. how much revenue does a customer generate over the following
+months after acquisition)?
 
 Every metric and every SQL model in this project exists to answer this one
 question. Do not add analysis that doesn't serve it.
@@ -33,7 +33,7 @@ at the very end):
 - Airflow
 - Any ML / forecasting model
 - n8n (if added later, it is a thin notification layer on top of the
-  existing pipeline — never a replacement for the GitHub Actions cron core)
+  existing pipeline, not a replacement for the GitHub Actions cron core)
 - Power BI (Tableau only)
 
 ## 3. Data Sources
@@ -41,10 +41,10 @@ at the very end):
 1. **Olist dataset** (Kaggle, real anonymized Brazilian marketplace data):
    orders, order_items, order_payments, customers, order_reviews.
 2. **GitHub API**: a small Python script pulls stars/forks/contributor counts
-   for a few chosen repos daily — this is the genuinely "live" piece that
+   for a few chosen repos daily. This is the genuinely "live" piece that
    proves the pipeline runs on a real schedule, not a one-off snapshot.
 3. **Synthetic `ad_spend` table**: generated with a fixed random seed
-   (reproducible), at **channel + month** granularity — deliberately coarser
+   (reproducible), at **channel + month** granularity, deliberately coarser
    than order-level. This granularity mismatch is intentional: it forces
    correct join/aggregation logic (aggregate customers to channel+month
    *before* joining to spend, never join spend directly to the order-level
@@ -60,24 +60,24 @@ channel):
   same customer always lands in the same channel (no separate mapping table
   needed, fully reproducible).
 - Weighted, not uniform, to look realistic:
-  - Organic / Direct — ~40%
-  - Google Ads — ~25%
-  - Facebook / Instagram Ads — ~20%
-  - Email / Referral — ~15%
+  - Organic / Direct: ~40%
+  - Google Ads: ~25%
+  - Facebook / Instagram Ads: ~20%
+  - Email / Referral: ~15%
 
 ## 5. Locked Metrics — closed list, do not add more
 
 1. **CAC by channel** = `ad_spend(channel, month) / count(new customers of
    that channel acquired in that month)`. Must be computed after aggregating
-   new customers to channel+month grain — joining ad_spend straight onto the
-   order-level table will silently inflate spend via fan-out.
+   new customers to channel+month grain, because joining ad_spend straight
+   onto the order-level table silently inflates spend via fan-out.
 2. **Repeat purchase rate (90-day cohort)** = % of a channel's first-
    purchase-month cohort that placed a second order within 90 days of their
    first order.
 3. **LTV-proxy (90 days)** = `sum(order_payments.payment_value)` within 90
    days of each customer's first order, aggregated by channel.
-4. **ROAS** = LTV-proxy / CAC — the final channel comparison metric.
-5. **A/B test** (separate, standalone mini-case — do not mix into the
+4. **ROAS** = LTV-proxy / CAC. The final channel comparison metric.
+5. **A/B test** (separate, standalone mini-case; do not mix into the
    channel analysis above): simulate an experiment (e.g. a checkout change),
    compute statistical significance in Python (z-test / p-value).
 
@@ -85,7 +85,7 @@ channel):
 
 - A one-page written insight in the style: "channel X looks best on CAC but
   worst on repeat purchase rate and LTV, so its real ROAS is lower than
-  channel Y — recommend reallocating N% of budget from X to Y, and here is
+  channel Y. Recommend reallocating N% of budget from X to Y, and here is
   why." Backed by the actual numbers from the marts.
 - A working Tableau Public dashboard on top of the marts layer.
 - Automation that has actually run on a schedule (GitHub Actions cron) for
@@ -93,22 +93,22 @@ channel):
 
 ## 7. Phases
 
-1. **Data** — load Olist as the core business tables; write the GitHub API
+1. **Data**: load Olist as the core business tables; write the GitHub API
    pull script; generate the synthetic `ad_spend` table; assign channel per
    customer.
-2. **Modeling (SQL/dbt)** — staging (raw tables as-is) → intermediate
+2. **Modeling (SQL/dbt)**: staging (raw tables as-is) → intermediate
    (granularity reconciliation, cohort = first-purchase month) → marts
    (repeat-purchase rate by cohort, LTV-proxy, CAC/ROAS by channel).
    Document *why* any UNION ALL / aggregation choice was made, not just what
    it does.
-3. **A/B test** — simulate the experiment, compute significance in Python.
-4. **Automation** — GitHub Actions cron runs the GitHub API pull + `dbt run`
+3. **A/B test**: simulate the experiment, compute significance in Python.
+4. **Automation**: GitHub Actions cron runs the GitHub API pull + `dbt run`
    on a schedule for real, over multiple weeks. n8n (optional, later) sits
    only at the notification/delivery end (e.g. posting a summary to Slack),
-   never replaces this core.
-5. **Visualization** — Tableau Public dashboard over the marts: retention
+   and never replaces this core.
+5. **Visualization**: Tableau Public dashboard over the marts; retention
    curve, LTV/ROAS by channel, funnel.
-6. **Documentation** — GitHub README explaining the architecture and every
+6. **Documentation**: GitHub README explaining the architecture and every
    non-obvious decision; optionally mirror the same "why this, not that"
    reasoning in Notion.
 
@@ -116,10 +116,10 @@ channel):
 
 - All code comments and variable names in English (this repo is for a
   public portfolio).
-- Document every non-obvious technical decision inline or in the README —
-  "why this, not that," not just what the code does.
+- Document every non-obvious technical decision inline or in the README
+  (the "why this, not that", not just what the code does).
 - Before writing any join, explicitly check granularity / fan-out risk.
-  `ad_spend` is intentionally coarser-grained than `orders` — never join it
+  `ad_spend` is intentionally coarser-grained than `orders`; never join it
   directly at order level.
 - Follow the rule of three: first compute a metric ad hoc and manually
   verify it's correct, second write down the exact logic as a spec, third

@@ -10,7 +10,7 @@
 --   mart_repeat_rate_by_channel  91 rows /  91 distinct keys
 -- So 1:1:1 on the composite key — INNER JOIN cannot multiply rows.
 --
--- Formula (marketing-metrics skill §"Locked metric formulas" #4):
+-- Formula (docs/PROJECT_BRIEF.md §5, metric #4):
 --   ROAS = LTV-proxy / CAC
 -- Identity: (ltv_total_brl / cohort_size) / (spend_brl / cohort_size)
 --         = ltv_total_brl / spend_brl.
@@ -19,7 +19,7 @@
 -- The identity is a useful sanity check — a one-liner
 -- SELECT ltv_total_brl/spend_brl vs roas would confirm on demand.
 --
--- JOIN choice (verify-rigorously skill §1): INNER on all three. A
+-- JOIN choice (the standard granularity re-check): INNER on all three. A
 -- row here is meaningful only when all three metrics are computable
 -- for the same (channel, month). 13 (channel, month) combinations
 -- from CAC (early months with ad spend but no customers acquired

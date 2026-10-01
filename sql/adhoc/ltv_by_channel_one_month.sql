@@ -3,7 +3,7 @@
 -- dbt model gets built on top. Nothing here is persisted — SELECT
 -- only, Sandbox-safe.
 --
--- Formula (locked by marketing-metrics skill, §"Locked metric formulas" #3):
+-- Formula (locked by docs/PROJECT_BRIEF.md §5, metric #3):
 --   LTV-proxy(90d)(channel) =
 --       sum(order_payments.payment_value) over all orders of a customer
 --       placed within 90 days of that customer's first order,
@@ -13,7 +13,7 @@
 -- cohort (Olist's busiest month = Black Friday) so we can eyeball
 -- LTV per customer next to CAC per customer for the same cohort.
 --
--- Grain trace (sql-query-rigor §"Перед будь-яким JOIN"):
+-- Grain trace (standard JOIN granularity check):
 --   * `orders`         — 1 row per order (99,441)
 --   * `customers`      — 1 row per customer_id (99,441). Same
 --                         customer_unique_id can appear on multiple
@@ -52,7 +52,7 @@ first_purchase AS (
 
 channels AS (
   -- Assign channel via deterministic hash of customer_unique_id
-  -- (marketing-metrics §"Channel assignment", weights 40/25/20/15).
+  -- (docs/PROJECT_BRIEF.md §4 channel assignment, weights 40/25/20/15).
   SELECT
     fp.customer_unique_id,
     fp.first_purchase_at,

@@ -17,8 +17,8 @@ __pycache__/
 *service-account*.json
 gcp-*.json
 
-# AI tooling config (Claude Code project skills + root pointer).
-# Kept local-only — present on disk, not part of the portfolio
-# deliverable visible on GitHub.
+# Local-only AI coding-assistant config (project skills + root pointer).
+# Kept on disk for the local tooling that reads them; not part of the
+# portfolio deliverable visible on GitHub.
 .claude/
 CLAUDE.md

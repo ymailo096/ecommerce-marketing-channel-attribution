@@ -1,6 +1,6 @@
 # Project Log
 
-Running narrative for this project — the "why" behind the code. The
+Running narrative for this project; the "why" behind the code. The
 README is the "what" and stays terse. `docs/PROJECT_BRIEF.md` holds the fixed
 brief and does not change; this file changes on every meaningful step.
 Single source of truth: when this and any other doc disagree, this
@@ -52,7 +52,7 @@ elapsed weeks" that the Definition of Done requires.
 (Tableau Desktop → Tableau Public GUI, can't headless). Waiting on
 one manual pass through the guide.
 
-**Phase 6 (docs)** — this file + README are the deliverable; kept in
+**Phase 6 (docs)**. This file + README are the deliverable; kept in
 sync commit-by-commit rather than at the end.
 
 ### Immediate next steps
@@ -63,7 +63,7 @@ sync commit-by-commit rather than at the end.
    annotation), publish to Tableau Public, paste the resulting URL
    into README's "Live dashboard" section.
 2. Passive: let the cron accumulate ~2+ weeks of visible run history
-   for the Definition of Done. Nothing to do in code — just calendar
+   for the Definition of Done. Nothing to do in code; just calendar
    time.
 
 ---
@@ -77,7 +77,7 @@ or prevented.**
 - **Why this**: no credit card involvement, 10 GiB storage and 1 TiB
   query bytes/month free-tier headroom is far more than Olist +
   synthetic ad_spend will ever consume. Also acts as a natural quota
-  safety net — impossible to accidentally rack up cost while iterating.
+  safety net: impossible to accidentally rack up cost while iterating.
 - **Not the alternatives**: attaching a card + a $1/month budget alert
   gives the same protection but adds a manual-teardown step at the end
   of the project; not worth the cognitive overhead for a portfolio piece.
@@ -102,7 +102,7 @@ or prevented.**
   or campaign × week/month), never per individual acquisition.
   Modelling it that way forces the analyst to reconcile grain before
   every join and mirrors the fan-out trap that inflates real-world CAC
-  dashboards. Documented in the `marketing-metrics` skill.
+  dashboards. Documented in docs/PROJECT_BRIEF.md §3.
 - **Not the alternatives**: generating spend per customer (fake data
   hiding the trap), or per channel only (no time dimension → no CAC by
   month → can't compute cohort-aligned ROAS later).
@@ -112,7 +112,7 @@ or prevented.**
   exist for exactly this reason.
 
 ### 2026-09-29 — Organic has deliberately nonzero spend (500-1500 BRL/month)
-- **Why this**: real "Organic" isn't free — SEO tools, content
+- **Why this**: real "Organic" isn't free: SEO tools, content
   writers, and landing-page work all cost money. A zero-spend organic
   channel would make Organic's CAC exactly zero (division by nonzero
   count) and the "misleading metric" story collapses. Small but
@@ -138,7 +138,7 @@ or prevented.**
   39.8/26.3/19.0/14.9, within 1 pp of the designed weights.
 
 ### 2026-09-29 — Kaggle download stays manual, not via `kaggle` CLI
-- **Why this**: Olist is a static snapshot — one download, done. A
+- **Why this**: Olist is a static snapshot, one download, done. A
   Kaggle API token would be a persistent credential sitting on disk
   next to the repo for a benefit that recurs zero times.
 - **Not the alternatives**: `pip install kaggle` + `~/.kaggle/kaggle.json`;
@@ -211,7 +211,7 @@ or prevented.**
   skeleton used `dataset: olist_staging`, the discarded
   per-layer-datasets pattern, not the `olist_dbt` single-dataset
   we shipped. Keeping the file would force any reader to reconcile
-  two versions of the truth — the goal of this pass was one clear
+  two versions of the truth; the goal of this pass was one clear
   decision log, so deleted.
 - **Trimmed `docs/kaggle_download.md`**: dropped the
   "Why not the Kaggle API?" section (that rationale lives here, in
@@ -239,7 +239,7 @@ or prevented.**
 - **What we added**:
   - `dbt/models/staging/_schema.yml` — dbt built-in `not_null` on
     `stg_ad_spend.channel`, `.month`, `.spend_brl`.
-  - `dbt/tests/mart_*_pk_channel_month.sql` — one singular
+  - `dbt/tests/mart_*_pk_channel_month.sql`, one singular
     uniqueness test per mart (CAC, LTV, repeat, ROAS). Pure SQL,
     no `dbt-utils` dependency.
   - `dbt/tests/mart_cac_by_channel__no_exact_zero_cac.sql` — flags
@@ -289,21 +289,22 @@ or prevented.**
   named, browseable file. The new root `CLAUDE.md` is three
   paragraphs pointing at `docs/PROJECT_BRIEF.md` +
   `docs/PROJECT_LOG.md` + `.claude/skills/`.
-- **Why not delete `CLAUDE.md` entirely**: Claude Code auto-loads
-  `CLAUDE.md` (and only `CLAUDE.md`) from repo root as project
-  context; deleting it would silently break future sessions'
-  ability to find the brief. The stub pointer preserves auto-load
-  behaviour with near-zero visual weight.
-- **Not the alternatives**: renaming to `PROJECT_CONTEXT.md`
-  (still at root, still on the first screen — solves nothing);
-  moving under `docs/` without a stub (breaks Claude Code auto-load).
-- **Follow-through**: `sed`-updated live `PROJECT_BRIEF.md §X`
-  references in `sql/adhoc/*.sql`, `python/*.py`, `README.md`, and
-  the intro paragraph of `PROJECT_LOG.md`. Historical decision-log
-  entries that discussed "CLAUDE.md" (including the earlier
-  first-screen entry that said "leave as-is") were **left as-is** —
-  they describe the state at the time they were written and get
-  superseded by this new entry, not silently rewritten.
+- **Why not delete `CLAUDE.md` entirely**: the local AI coding
+  assistant auto-loads `CLAUDE.md` (and only that filename) from the
+  repo root as project context. Deleting it would silently break
+  future sessions' ability to find the brief. The stub pointer
+  preserves auto-load behaviour with near-zero visual weight.
+- **Not the alternatives**: renaming to `PROJECT_CONTEXT.md` would
+  leave the file at root, still on the first screen, and solve
+  nothing; moving under `docs/` without a stub would break the
+  auto-load.
+- **Follow-through**: live `PROJECT_BRIEF.md §X` references in
+  `sql/adhoc/*.sql`, `python/*.py`, `README.md`, and the intro
+  paragraph of `PROJECT_LOG.md` were updated by sed. Historical
+  decision-log entries that discussed "CLAUDE.md" (including the
+  earlier first-screen entry that said "leave as-is") were left
+  unchanged; they describe past state and get superseded by this
+  new entry rather than silently rewritten.
 
 ### 2026-09-30 — README restructured for a 30-second skim; repo first-screen review
 - **README** rewritten with results first: business question → 2017-11
@@ -328,18 +329,18 @@ or prevented.**
   `python/`, `sql/`, plus `CLAUDE.md`, `README.md`,
   `requirements.txt`, `.env.example`, `.gitignore`. Decision:
   **leave as-is**. Rationale:
-  - `.claude/skills/` files (`marketing-metrics/SKILL.md`,
-    `verify-rigorously/SKILL.md`) are genuine project documentation —
-    the locked metric formulas and verification discipline that every
-    SQL model defers to. Moving them under `docs/` would break the
-    Claude-Code auto-loading convention (`.claude/skills/*/SKILL.md`)
-    without adding any human-reader value.
+  - `.claude/skills/` files held the locked metric formulas and
+    verification discipline that every SQL model defers to. Moving
+    them under `docs/` would break the auto-loading convention
+    (`.claude/skills/*/SKILL.md`) without adding any human-reader
+    value. (Note: later superseded — see the "stop tracking AI
+    tooling" entry below. These files are now gitignored entirely.)
   - Added `.claude/README.md` so a reviewer clicking that folder on
-    GitHub gets a one-line "what's this?" answer instead of a bare
-    listing of `skills/`.
-  - `CLAUDE.md` at root is a well-known convention in AI-assisted
-    repos; `README.md`'s "What's where" table already labels it as
-    the fixed project brief. Not renaming.
+    GitHub would get a one-line explanation instead of a bare
+    `skills/` listing.
+  - `CLAUDE.md` at root is a conventional filename for assistant-
+    read project context; `README.md`'s "What's where" table already
+    labels it as the fixed project brief. Not renaming.
   - Everything else (`.github/`, `requirements.txt`, `.env.example`,
     `.gitignore`) is standard.
 
@@ -350,7 +351,7 @@ First successful `workflow_dispatch` run of `.github/workflows/daily.yml`:
 - **Run**: https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733
 - **Dispatched**: 2026-09-30T12:48:55Z
 - **Completed**: 2026-09-30T12:50:13Z (78 s wall time)
-- **Conclusion**: `success` (all 7 job steps green — Checkout, Set up
+- **Conclusion**: `success` (all 7 job steps green (Checkout, Set up
   Python, Install dependencies, Authenticate to GCP, Pull GitHub
   metrics, dbt run, plus post-steps).
 
@@ -361,45 +362,44 @@ Evidence the pipeline actually did the work (not just "workflow ran"):
   2026-09-30T12:49:34Z. The `dbt run` step then rebuilt
   `olist_dbt.stg_github_metrics` with the same 6 rows (verified via
   `bq query` COUNT + MIN/MAX fetched_at).
-- **Live-data smoke signal** (verify-rigorously §1 — don't
-  pattern-match, re-derive): between the two pulls,
-  `astral-sh/uv` dropped from 90,313 → 90,312 stars and
-  `dbt-labs/dbt-core` from 13,949 → 13,948 — real world movement in
-  the ~26 minutes between runs. The pipeline is genuinely reading
-  live GitHub, not caching a snapshot.
+- **Live-data smoke signal** (re-derive the diff rather than
+  pattern-match the counts): between the two pulls, `astral-sh/uv`
+  dropped from 90,313 to 90,312 stars and `dbt-labs/dbt-core` from
+  13,949 to 13,948, real-world movement in the ~26 minutes between
+  runs. The pipeline is genuinely reading live GitHub, not caching
+  a snapshot.
 
 Next step-3 milestone: leave the daily cron alone. The Definition of
-Done wants "visible run history over elapsed weeks" — that just
+Done wants "visible run history over elapsed weeks", that just
 requires calendar time, no code changes.
 
 ### 2026-09-30 — Uploaded GCP_SA_KEY via GH secrets API (encrypted with libsodium), not clipboard paste
 
-- **Why this**: user's clipboard-based paste into GitHub's Secret
-  form kept getting corrupted. The first two workflow attempts
-  failed at the `Authenticate to GCP` step with `unexpected token
-  'g', "\ng~T…" is not valid JSON` — the secret stored what
-  looked like binary noise instead of the JSON we tried to paste.
-  Diagnosis was that between our `pbcopy` (which reliably placed
-  the 2,423-byte JSON on the clipboard, verified via
-  round-trip `diff`) and the user's Cmd+V in the browser, some
-  other event overwrote the clipboard (in one case the literal
-  string `Cmd+A` from a Claude message was found on the clipboard
-  afterwards).
-- **What we did instead**: uploaded the secret via
+- **Why this**: a clipboard-based paste into GitHub's Secret form
+  kept producing a corrupted secret value. The first two workflow
+  attempts failed at the `Authenticate to GCP` step with
+  `unexpected token 'g', "\ng~T…" is not valid JSON`; the stored
+  secret looked like binary noise rather than the JSON that was
+  copied. Diagnosis: between the `pbcopy` step (which reliably
+  placed the 2,423-byte JSON on the clipboard, verified via a
+  round-trip `diff`) and the Cmd+V in the browser, some other
+  event overwrote the clipboard. In one observed case the pasted
+  value turned out to be the literal string `Cmd+A` copied from an
+  earlier instruction snippet.
+- **The workaround**: upload the secret via
   `PUT /repos/.../actions/secrets/GCP_SA_KEY`, encrypting the JSON
   with libsodium's sealed-box using the repo's public key (fetched
   from `GET /actions/secrets/public-key`). Same net effect as a
-  browser paste — GitHub only ever sees the ciphertext, decrypts
-  it internally to inject into workflow runs — but the plaintext
-  never touches the clipboard on the way there.
-- **Not the alternatives**: reopening the paste with hand-holding
-  (already failed twice with the same corruption); installing
-  `gh secret set` (would need another CLI install, and gh's own
-  secret-set command does the same libsodium encryption internally,
-  so nothing changes on the wire).
-- **Security note**: PAT with `repo` scope was used to write the
-  secret. PyNaCl (Python binding of libsodium) added to `.venv`
-  for this. The SA JSON stays on disk only at
+  browser paste; GitHub only sees the ciphertext and decrypts
+  internally to inject into workflow runs. The plaintext never
+  touches the clipboard on the way there.
+- **Not the alternatives**: retrying the paste (already failed
+  twice with the same corruption); installing `gh secret set`,
+  which would need another CLI install and does the same libsodium
+  encryption internally anyway, so nothing changes on the wire.
+- **Security note**: a PAT with `repo` scope was used to write the
+  secret. PyNaCl (Python binding of libsodium) was added to `.venv`
+  for the encryption step. The SA JSON stays on disk only at
   `~/…/scratchpad/github-actions-runner.sa.json` (mode 0600,
   gitignored by `*.sa.json` in `.gitignore`).
 
@@ -411,7 +411,7 @@ requires calendar time, no code changes.
   Login, GCE, or any resource outside BigQuery.
 - **Not the alternatives**:
   - Reusing my personal `gcloud auth application-default` credentials
-    via a leaked keyfile — grants effectively `roles/owner`, would
+    via a leaked keyfile; it grants effectively `roles/owner`, would
     give CI enough power to delete the project or change billing.
     Wildly disproportionate to what the workflow does.
   - Workload Identity Federation (short-lived tokens, no long-lived
@@ -427,13 +427,12 @@ requires calendar time, no code changes.
   `olist_dbt`) and both are targets — dataset-scoped bindings would
   be strictly more setup for no additional security surface reduction.
 - **Key handling**: JSON key created via `gcloud iam
-  service-accounts keys create` into the session scratchpad (mode
+  service-accounts keys create` into a local scratchpad path (mode
   0600, outside the repo, gitignored by the `*.sa.json` pattern from
-  the initial commit), then uploaded manually to the repo's
-  `GCP_SA_KEY` Actions secret. Never committed. Rotation plan:
-  regenerate every 90 days or immediately on any suspicious CI log,
-  update the secret, `gcloud iam service-accounts keys delete` the
-  old one.
+  the initial commit), then uploaded to the repo's `GCP_SA_KEY`
+  Actions secret. Never committed. Rotation plan: regenerate every
+  90 days or immediately on any suspicious CI log, update the
+  secret, and `gcloud iam service-accounts keys delete` the old one.
 
 ### 2026-09-30 — Sandbox quota vs a daily scheduled job — plenty of headroom
 - **Question**: does a daily automated run risk blowing through
@@ -454,7 +453,7 @@ requires calendar time, no code changes.
 - **Kept unchanged**: no switch to billing needed for Phase 4. If
   future phases push scan volume past ~50% of quota (a scenario
   that would require ~15× today's DAG size), attach a billing account
-  and remove the sandbox flag — recorded as a threshold, not a plan.
+  and remove the sandbox flag. Recorded as a threshold, not a plan.
 
 ### 2026-09-30 — Cron schedule: `0 6 * * *` (06:00 UTC daily)
 - **Why this slot**: 06:00 UTC lands in the trough between the two
@@ -467,7 +466,7 @@ requires calendar time, no code changes.
   frequent polling, and less-frequent (weekly) would take too long
   to accumulate the "visible run history over actual elapsed weeks"
   that the Definition of Done requires.
-- **Not the alternatives**: `0 0 * * *` (top-of-day UTC — the most
+- **Not the alternatives**: `0 0 * * *` (top-of-day UTC; the most
   contested cron slot on GH); `0 12 * * *` (busy US morning);
   `0 3 * * *` (fine, but arbitrary — 06:00 also happens to be a
   reasonable "check-in time" for a Europe-based owner).
@@ -490,14 +489,14 @@ requires calendar time, no code changes.
   `store`, plus one `git credential-osxkeychain erase` to clear the
   stale github.com entry. Filed here so we don't spend the same 15
   minutes twice.
-- **Cost of exposed tokens**: three PATs ended up in this session's
-  chat transcript during trial-and-error. All three revoked immediately
+- **Cost of exposed tokens**: three PATs got exposed in the local
+  message log during trial-and-error. All three revoked immediately
   after; only the last one lives in `~/.git-credentials` locally.
 
 ### 2026-09-30 — Channel-LTV flatness is the actual Phase 6 headline
 - **Why this**: LTV verification (see rule-of-three log) shows
   per-channel LTV within ~5% across all four channels. This is not
-  noise on top of a hidden signal — it *is* the signal. Channel is a
+  noise on top of a hidden signal; it *is* the signal. Channel is a
   deterministic hash of `customer_unique_id`, independent of every
   purchase-behaviour attribute in the data (docs/PROJECT_BRIEF.md §4), so
   per-channel LTV averages have to converge to the overall mean.
@@ -513,8 +512,8 @@ requires calendar time, no code changes.
   > Under a channel-neutral customer base, the entire ROAS story
   > reduces to CAC. Organic's 17× CAC advantage over Google Ads
   > translates almost 1:1 into a 17× ROAS advantage. If a real
-  > business ever produced this pattern — one paid-looking channel
-  > with a near-zero CAC — the correct first move wouldn't be
+  > business ever produced this pattern, one paid-looking channel
+  > with a near-zero CAC; the correct first move wouldn't be
   > "spend more on channel A", it would be "audit whether channel
   > A's spend is being under-reported by the source system". A
   > near-zero CAC on any paid-looking channel is a data-quality
@@ -523,21 +522,23 @@ requires calendar time, no code changes.
   problem. The write-up can be about the methodology (grain
   reconciliation, cohort-aligned ROAS) and the observation that a
   behaviour-neutral customer base makes the entire ROAS ordering
-  reducible to spend-side data quality — a more mature analyst
+  reducible to spend-side data quality; a more mature analyst
   finding than a fabricated behavioural split.
 
-### 2026-09-30 — `~/.claude/skills/marketing-metrics/` created as project-scoped skill
-- **Why this**: the metric formulas (CAC/LTV/repeat/ROAS + channel
-  weights + granularity trap) are the highest-cost thing to get wrong
-  and the highest-cost thing to re-derive from memory in the wrong
-  way. Putting them in a Claude-agent-discoverable skill file means
-  any future session touching a SQL/dbt model gets prompted to load
-  the exact formulas.
-- **Not the alternatives**: relying on CLAUDE.md alone (auto-loaded
-  but not surfaced during a specific task); a cloud claude.ai skill
-  only (works but lives outside the repo, no GitHub visibility).
-- **Unblocked**: the skill is checked into the repo and travels with
-  it.
+### 2026-09-30 — Locked metric formulas pinned as a project-local assistant note
+- **Why this**: the metric formulas (CAC / LTV / repeat / ROAS plus
+  channel weights and the granularity trap) are the highest-cost
+  thing to get wrong and the highest-cost thing to re-derive from
+  memory in the wrong way. A project-local note surfaces the exact
+  formulas on every future SQL/dbt edit, instead of relying on a
+  general brief that might not be loaded for a specific task.
+- **Not the alternatives**: relying on docs/PROJECT_BRIEF.md alone
+  (auto-loaded, but not surfaced during a specific task); a
+  cloud-hosted note only (works, but lives outside the repo).
+- **Unblocked**: formulas pinned next to the code that uses them.
+  (Later superseded — see the "stop tracking AI tooling" entry
+  below. The pinned note was moved out of version control; the
+  formulas themselves live in docs/PROJECT_BRIEF.md §5.)
 
 ---
 
@@ -566,7 +567,7 @@ Verified 2017-11 CAC snapshot (both ad hoc and mart):
 | Google Ads              | 1,920         | 12,932.00   | 6.74      |
 
 Channel split: 39.8 / 26.3 / 19.0 / 14.9 (target 40 / 25 / 20 / 15).
-Organic is 17× cheaper than Google Ads on CAC — this is the exact
+Organic is 17× cheaper than Google Ads on CAC. This is the exact
 "misleading metric" the LTV/ROAS marts are designed to expose next.
 
 ### Repeat purchase rate (90-day cohort)
@@ -598,7 +599,7 @@ mean, and the tiny gaps are noise, not signal.
 
 | Step | State | Evidence |
 |------|-------|----------|
-| 1 — ad hoc verified | ✅ 2026-09-30 | [`sql/adhoc/ltv_by_channel_one_month.sql`](../sql/adhoc/ltv_by_channel_one_month.sql) run for 2017-11 cohort. Cohort sizes match the CAC counts exactly (same customer set — the query re-derives channel via the same FARM_FINGERPRINT hash). Table below. |
+| 1 — ad hoc verified | ✅ 2026-09-30 | [`sql/adhoc/ltv_by_channel_one_month.sql`](../sql/adhoc/ltv_by_channel_one_month.sql) run for 2017-11 cohort. Cohort sizes match the CAC counts exactly (same customer set; the query re-derives channel via the same FARM_FINGERPRINT hash). Table below. |
 | 2 — dbt | ✅ 2026-09-30 | `int_customer_ltv_90d` (per customer_unique_id, sum of payments within 90d of first order) + `mart_ltv_by_channel` (per channel, first_purchase_month). Grain deliberately matches `mart_cac_by_channel` so ROAS composes trivially. Slice at `WHERE month = '2017-11-01'` matches the step-1 numbers exactly (cohort_size, ltv_total_brl, ltv_per_customer_brl all identical). |
 | 3 — automated | ✅ 2026-09-30 | Rebuilt by the daily GH Actions cron's `dbt run` step. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
 
@@ -629,11 +630,10 @@ Phase 6 headline`.
 | Step | State | Evidence |
 |------|-------|----------|
 | 1 — ad hoc verified | ✅ 2026-09-30 | Hand-computed for 2017-11 all four channels (numerators/denominators shown in the ROAS commit message and below), then cross-checked against the mart to 4 decimal places. |
-| 2 — dbt | ✅ 2026-09-30 | `mart_roas_by_channel` (3-way INNER JOIN of CAC, LTV, repeat marts on (channel, month) — 1:1:1, no aggregation). Uniqueness of (channel, month) in each input was verified empirically first (CAC 104/104, LTV 91/91, repeat 91/91), so the join cannot fan out. Result count 91 matches the min of the three input keysets. |
+| 2 — dbt | ✅ 2026-09-30 | `mart_roas_by_channel` (3-way INNER JOIN of CAC, LTV, repeat marts on (channel, month), 1:1:1, no aggregation). Uniqueness of (channel, month) in each input was verified empirically first (CAC 104/104, LTV 91/91, repeat 91/91), so the join cannot fan out. Result count 91 matches the min of the three input keysets. |
 | 3 — automated | ✅ 2026-09-30 | Rebuilt by the daily GH Actions cron's `dbt run` step. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
 
-Verified 2017-11 ROAS snapshot (side-by-side hand vs mart, per
-`verify-rigorously` skill §4):
+Verified 2017-11 ROAS snapshot, side-by-side hand vs mart:
 
 | Channel                 | Hand cac | Mart cac | Hand ltv/c | Mart ltv/c | Hand ROAS | Mart ROAS |
 |-------------------------|----------|----------|------------|------------|-----------|-----------|
@@ -651,16 +651,16 @@ computed both ways in a single SELECT — all four channels agree to
 4 dp (Organic 418.7752, Google 24.4953, FB/IG 35.6898,
 Email 102.1716).
 
-**Interpretation caveat (verify-rigorously skill §3)**: these ROAS
-numbers reflect the synthetic ad_spend ranges we chose (Organic
-500–1500 BRL/month vs Google Ads 8000–15000) multiplied by a
-quasi-constant LTV per customer (~158–166 BRL, independent of
-channel by construction). The 17× Organic-vs-Google ordering is
-therefore *not* a signal that Organic is a better acquisition
-channel — it's the direct arithmetic consequence of the spend
-weights we set. This is precisely the "data-quality red flag before
-investment thesis" framing recorded in the decision-log entry
-`Channel-LTV flatness is the actual Phase 6 headline`.
+**Interpretation caveat**: these ROAS numbers reflect the synthetic
+ad_spend ranges we chose (Organic 500–1500 BRL/month vs Google Ads
+8000–15000) multiplied by a quasi-constant LTV per customer
+(~158–166 BRL, independent of channel by construction). The 17×
+Organic-vs-Google ordering is therefore *not* a signal that Organic
+is a better acquisition channel; it's the direct arithmetic
+consequence of the spend weights we set. This is precisely the
+"data-quality red flag before investment thesis" framing recorded
+in the decision-log entry `Channel-LTV flatness is the actual
+Phase 6 headline`.
 
 ### A/B test
 Standalone mini-case per brief §5.5 — deliberately not on the

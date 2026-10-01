@@ -2,13 +2,13 @@
 -- ∈ {0, 1} — 1 when the customer placed at least one order strictly
 -- AFTER their first_purchase_at and within 90 days of it.
 --
--- Formula (locked in `marketing-metrics` skill, §"Locked metric
--- formulas" #2): repeat purchase rate is % of a channel's first-
--- purchase-month cohort with a second order within 90 days. This
--- model provides the per-customer 0/1 signal; the aggregation to
--- (channel, month) percent lives in `mart_repeat_rate_by_channel`.
+-- Formula (docs/PROJECT_BRIEF.md §5, metric #2): repeat purchase
+-- rate is the % of a channel's first-purchase-month cohort with a
+-- second order within 90 days. This model provides the per-customer
+-- 0/1 signal; the aggregation to (channel, month) percent lives in
+-- `mart_repeat_rate_by_channel`.
 --
--- Grain trace (sql-query-rigor §"Перед будь-яким JOIN"):
+-- Grain trace (standard JOIN granularity check):
 --   int_customer_channel  1 row per customer_unique_id (already deduped)
 --   stg_customers         1:many on customer_unique_id (repeat buyers
 --                           get one row per customer_id, so N ≥ 1 rows)
