@@ -28,7 +28,7 @@ Steps 3–4 are GUI-only; nothing headless.
 - **Tableau Public account** — free sign-up at
   `public.tableau.com`.
 
-## 1. Snapshot the marts to CSVs
+## 1. Snapshot the marts to one combined CSV
 
 Local prereq: `gcloud auth application-default login` and dbt has
 been run at least once (so `olist_dbt.mart_*` exist). Then:
@@ -38,36 +38,33 @@ source .venv/bin/activate
 python python/export_marts_to_csv.py
 ```
 
-Writes four files to `data/tableau_export/`:
+Writes one file to `data/tableau_export/marts.csv` — a 4-way INNER
+JOIN of the four marts on `(channel, month)`. 91 rows × 10 columns,
+all metrics in one flat table so Tableau doesn't need to set up
+joins itself. Column list is in
+[`data/README.md`](../data/README.md).
 
-- `mart_cac_by_channel.csv` (104 rows)
-- `mart_ltv_by_channel.csv` (91 rows)
-- `mart_repeat_rate_by_channel.csv` (91 rows)
-- `mart_roas_by_channel.csv` (91 rows) — the primary source for the
-  dashboard; every column the other three provide is already on it.
-
-These CSVs are committed to the repo as static snapshots (they're
-deterministic outputs of dbt on Olist's static input, so they don't
+The file is committed to the repo as a static snapshot (it's a
+deterministic output of dbt on Olist's static input, so it doesn't
 drift). Re-run the script to refresh after any model change.
 
 ## 2. Import into Tableau Public Desktop
 
 1. Open Tableau Public Desktop → **Connect** → **Text file**.
-2. Pick `data/tableau_export/mart_roas_by_channel.csv`.
+2. Pick `data/tableau_export/marts.csv`.
 3. Tableau shows the schema preview. Confirm `month` is parsed as
    Date, not String. If it's String, right-click the field →
    **Change Data Type** → **Date**.
-4. (Optional, for cross-mart checks) add the other three CSVs as
-   additional text-file connections in the same workbook.
+
+That's it — one data source, no join/relationship UI to configure
+on the Tableau side.
 
 ## 3. Build the dashboard
 
 Aim: one page, four things a portfolio reviewer can absorb in ~20 s.
-Use `mart_roas_by_channel` as the primary source — every field is
-on it already.
 
 1. **KPI row across the top** (four tiles, one per channel):
-   `channel`, `cohort_size`, `cac_brl`, `ltv_per_customer_brl`,
+   `channel`, `new_customers`, `cac_brl`, `ltv_per_customer_brl`,
    `roas`. Filter to `month = 2017-11-01` for the "Black Friday
    snapshot" framing the README uses, or make month a dropdown so
    the viewer can pick.
@@ -78,9 +75,8 @@ on it already.
    - Filter to months with meaningful cohorts. `month >=
      2017-01-01` is a safe cutoff — the earliest few months of
      Olist have single-digit cohort sizes per channel and the ROAS
-     values there are noise. `mart_roas_by_channel.csv` includes
-     those rows; you can spot them because `cohort_size` there is
-     `1`–`10`.
+     values there are noise. `marts.csv` includes those rows; you
+     can spot them because `new_customers` there is `1`–`10`.
 3. **Bar chart** (bottom-right half):
    - X: `channel`
    - Y: `roas` for the selected month
@@ -121,7 +117,7 @@ connection), the published dashboard doesn't auto-refresh. To
 update after a code change to the marts:
 
 ```bash
-python python/export_marts_to_csv.py   # regenerate CSVs
+python python/export_marts_to_csv.py   # regenerate marts.csv
 # re-open the workbook in Tableau Public Desktop, then
 # File → Save to Tableau Public As… → same name, overwrite
 ```
