@@ -28,5 +28,5 @@ sources:
         description: >
           1 row per (fetched_at, repo) — appended daily by the
           .github/workflows/daily.yml cron via python/github_metrics_pull.py.
-          The "genuinely live" data source per PROJECT_PLAN §3.2 —
+          The "genuinely live" data source per docs/PROJECT_BRIEF.md §3.2 —
           proves the pipeline runs on a real schedule.

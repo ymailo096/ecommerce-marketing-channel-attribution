@@ -8,7 +8,7 @@ description: Use when writing or reviewing any dbt model, SQL query, or metric c
 This project answers one question: which marketing channel is actually
 most efficient once you look past the cost of the first order. Every
 metric below exists to serve that question — do not add new metrics
-without updating PROJECT_PLAN.md first.
+without updating docs/PROJECT_BRIEF.md first.
 
 ## Channel assignment
 Channel is a synthetic attribute assigned per customer (not per order),
@@ -22,7 +22,7 @@ Always aggregate customers to channel+month BEFORE joining to ad_spend.
 Never join ad_spend directly to an order-level or customer-level table —
 this causes silent fan-out inflation of spend.
 
-## Locked metric formulas (do not modify without checking PROJECT_PLAN.md)
+## Locked metric formulas (do not modify without checking docs/PROJECT_BRIEF.md)
 
 1. CAC by channel = ad_spend(channel, month) / count(new customers of that channel acquired in that month)
 2. Repeat purchase rate (90-day cohort) = % of a channel's first-purchase-month cohort that placed a second order within 90 days of their first order

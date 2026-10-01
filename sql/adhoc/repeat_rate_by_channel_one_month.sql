@@ -38,7 +38,7 @@
 --
 -- Expected numbers: Olist's overall repeat purchase rate is very low
 -- (single-digit percent), and because channel is a random hash of
--- customer_unique_id (PROJECT_PLAN §4), per-channel rates should sit
+-- customer_unique_id (docs/PROJECT_BRIEF.md §4), per-channel rates should sit
 -- within a couple of percentage points of each other. Any large gap
 -- would indicate a query bug, not a real signal.
 

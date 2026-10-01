@@ -1,6 +1,6 @@
 """Daily GitHub API pull — stars / forks / contributor count.
 
-The "genuinely live" data source per PROJECT_PLAN §3.2 — proves the
+The "genuinely live" data source per docs/PROJECT_BRIEF.md §3.2 — proves the
 pipeline runs on a real schedule rather than a one-off snapshot.
 
 Appends one row per (fetched_at, repo) to `olist_raw.github_metrics`

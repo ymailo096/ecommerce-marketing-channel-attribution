@@ -25,8 +25,8 @@ file wins.
 all with mart-vs-ad-hoc parity for 2017-11.
 - dbt project scaffolded at `dbt/`, target dataset `olist_dbt`, all
   models materialize as `table`.
-- 13 models exist and `dbt run` is green:
-  staging (5) → intermediate (4: `int_customer_channel`,
+- 14 models exist and `dbt run` is green:
+  staging (6) → intermediate (4: `int_customer_channel`,
   `int_new_customers_by_channel_month`, `int_customer_ltv_90d`,
   `int_customer_repeat_90d`) →
   marts (4: `mart_cac_by_channel`, `mart_ltv_by_channel`,
@@ -462,7 +462,7 @@ requires calendar time, no code changes.
   and top-of-hour minute-0 slots). Fewer contended runners →
   smaller drift between scheduled and actual fire time (GitHub docs
   warn cron can be delayed 10–30 min during peak load).
-- **Why daily, not hourly/weekly**: PROJECT_PLAN §3.2 says "daily";
+- **Why daily, not hourly/weekly**: docs/PROJECT_BRIEF.md §3.2 says "daily";
   GitHub repo stars/forks don't change fast enough to warrant more
   frequent polling, and less-frequent (weekly) would take too long
   to accumulate the "visible run history over actual elapsed weeks"
@@ -499,7 +499,7 @@ requires calendar time, no code changes.
   per-channel LTV within ~5% across all four channels. This is not
   noise on top of a hidden signal — it *is* the signal. Channel is a
   deterministic hash of `customer_unique_id`, independent of every
-  purchase-behaviour attribute in the data (PROJECT_PLAN §4), so
+  purchase-behaviour attribute in the data (docs/PROJECT_BRIEF.md §4), so
   per-channel LTV averages have to converge to the overall mean.
 - **Not the alternatives**: biasing the channel hash on
   `customer_state` or basket size (would manufacture a story that
@@ -591,7 +591,7 @@ Olist's well-known low repeat rate (single digits). Spread across
 channels is 0.6 pp, well inside sampling noise for cohorts of
 1,091–2,907. Same "flatness is expected" logic as LTV applies:
 because channel is a random hash independent of purchase behaviour
-(PROJECT_PLAN §4), per-channel repeat rates converge to the population
+(docs/PROJECT_BRIEF.md §4), per-channel repeat rates converge to the population
 mean, and the tiny gaps are noise, not signal.
 
 ### LTV-proxy (90 days)
@@ -614,7 +614,7 @@ Verified 2017-11 LTV-proxy snapshot:
 **Expected finding — LTV is statistically flat across channels**
 (158–166 BRL, ~5% spread, well within the sampling noise for cohorts
 of 1,091–2,907 customers per channel). This is a direct and *intended*
-consequence of PROJECT_PLAN.md §4: channel assignment is a
+consequence of docs/PROJECT_BRIEF.md §4: channel assignment is a
 deterministic hash of `customer_unique_id`, so it is independent of
 every purchase-behavior attribute in the data. Per-channel LTV
 averages therefore converge to the overall population mean, exactly

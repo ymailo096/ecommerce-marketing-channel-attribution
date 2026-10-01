@@ -180,7 +180,7 @@ bq load --source_format=CSV --skip_leading_rows=1 --location=EU --replace \
 
 # 3. Rebuild the dbt marts.
 source .venv/bin/activate
-cd dbt && dbt run           # materializes 13 tables in olist_dbt
+cd dbt && dbt run           # materializes 14 tables in olist_dbt
 
 # 4. Ad hoc verification query (rule-of-three step 1 — matches mart exactly).
 bq query --use_legacy_sql=false --location=EU --format=pretty \
@@ -195,7 +195,7 @@ against BigQuery, authenticating with a dedicated least-privilege
 service account (`roles/bigquery.jobUser` +
 `roles/bigquery.dataEditor`, nothing else). The visible run history
 on the Actions tab is the "genuinely live" evidence per
-PROJECT_PLAN.md §3.2.
+docs/PROJECT_BRIEF.md §3.2.
 
 ## What's where
 
