@@ -19,6 +19,19 @@ exactly, then enforced in CI with dbt tests.
 > below are illustrative of the methodology, not real investment
 > recommendations.**
 
+## Locked metric formulas
+
+Also written out in full in [`docs/PROJECT_BRIEF.md §5`](docs/PROJECT_BRIEF.md).
+
+| # | Metric                     | Formula                                                                                     |
+|---|----------------------------|---------------------------------------------------------------------------------------------|
+| 1 | CAC by channel             | `ad_spend(channel, month) / new_customers(channel, month)`                                  |
+| 2 | Repeat purchase rate (90d) | % of channel's first-month cohort with a 2nd order within 90 days                           |
+| 3 | LTV-proxy (90d)            | `SUM(payment_value)` within 90 days of each customer's first order, aggregated by channel   |
+| 4 | ROAS                       | `LTV-proxy / CAC`                                                                           |
+
+A separate, standalone A/B-test simulation (repeat-rate lift, two-proportion z-test in stdlib only) lives in [`python/ab_test_repeat_rate.py`](python/ab_test_repeat_rate.py) — deliberately kept out of the channel-attribution metrics above; see [`docs/PROJECT_LOG.md`](docs/PROJECT_LOG.md) for the full result.
+
 ## Verified 2017-11 snapshot (Olist's Black Friday peak)
 
 | Channel                 | New customers | Spend (BRL) | CAC (BRL) | LTV/customer (BRL) | Repeat rate | ROAS   |
@@ -79,16 +92,16 @@ Read this before drawing any conclusions from the numbers above.
   on `stg_ad_spend`, and a no-exact-zero-CAC guard; a change that
   would break any of these fails CI instead of landing in `olist_dbt`.
 
-## Stack
-
-BigQuery · dbt · Python (stdlib + `google-cloud-bigquery`) · GitHub
-Actions (`dbt run` + `dbt test` on push) · Tableau Public
-
 ## Live dashboard
 
 *(Tableau Public link — placeholder until Phase 5 lands.)*
 
 ---
+
+## Stack
+
+BigQuery · dbt · Python (stdlib + `google-cloud-bigquery`) · GitHub
+Actions (`dbt run` + `dbt test` on push) · Tableau Public
 
 ## Architecture
 
@@ -137,19 +150,6 @@ joining spend directly onto order-level rows is the fan-out trap
 the intermediate layer prevents by aggregating up first. That grain
 reconciliation happens on purpose, in the intermediate layer, before
 the mart.
-
-## Locked metric formulas
-
-Also written out in full in [`docs/PROJECT_BRIEF.md §5`](docs/PROJECT_BRIEF.md).
-
-| # | Metric                     | Formula                                                                                     |
-|---|----------------------------|---------------------------------------------------------------------------------------------|
-| 1 | CAC by channel             | `ad_spend(channel, month) / new_customers(channel, month)`                                  |
-| 2 | Repeat purchase rate (90d) | % of channel's first-month cohort with a 2nd order within 90 days                           |
-| 3 | LTV-proxy (90d)            | `SUM(payment_value)` within 90 days of each customer's first order, aggregated by channel   |
-| 4 | ROAS                       | `LTV-proxy / CAC`                                                                           |
-
-A separate, standalone A/B-test simulation (repeat-rate lift, two-proportion z-test in stdlib only) lives in [`python/ab_test_repeat_rate.py`](python/ab_test_repeat_rate.py) — deliberately kept out of the channel-attribution metrics above; see [`docs/PROJECT_LOG.md`](docs/PROJECT_LOG.md) for the full result.
 
 ## Run it locally
 
