@@ -1,4 +1,4 @@
-# E-commerce Marketing Channel Attribution — Project Brief
+# Marketing Metrics Methodology — Project Brief
 
 > The fixed brief: scope, metrics, phases. Do not edit; live state
 > and decisions go in [`PROJECT_LOG.md`](PROJECT_LOG.md) instead.

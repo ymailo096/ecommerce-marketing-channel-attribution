@@ -1,4 +1,4 @@
-# E-commerce Marketing Channel Attribution
+# Marketing Metrics Methodology (CAC · LTV · ROAS)
 
 This project demonstrates correctly constructing and validating
 marketing-attribution metrics (CAC, LTV-proxy, repeat purchase

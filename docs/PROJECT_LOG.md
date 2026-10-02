@@ -601,7 +601,7 @@ N without evidence that step N-1 was correct.
 |------|-------|----------|
 | 1 — ad hoc verified | ✅ 2026-09-29 | [`sql/adhoc/cac_by_channel_one_month.sql`](../sql/adhoc/cac_by_channel_one_month.sql) run via `bq query` for 2017-11 (Olist's Black Friday peak). See table below. |
 | 2 — dbt models | ✅ 2026-09-30 | `dbt run` builds `olist_dbt.mart_cac_by_channel`; a `WHERE month = '2017-11-01'` slice matches the step-1 numbers **exactly** on all four channels (counts, spend, CAC to 2 dp). Grain reduction happens in `int_customer_channel` (per customer_unique_id) then `int_new_customers_by_channel_month` (per channel+month), before the mart's 1:1 join to `stg_ad_spend`. |
-| 3 — automated | ✅ 2026-09-30 | Rebuilt by the daily GH Actions cron's `dbt run` step. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
+| 3 — automated | ✅ 2026-09-30 | Rebuilt by `dbt run` in GH Actions CI on every push to `main`. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
 
 Verified 2017-11 CAC snapshot (both ad hoc and mart):
 
@@ -622,7 +622,7 @@ Organic is 17× cheaper than Google Ads on CAC. This is the exact
 |------|-------|----------|
 | 1 — ad hoc verified | ✅ 2026-09-30 | [`sql/adhoc/repeat_rate_by_channel_one_month.sql`](../sql/adhoc/repeat_rate_by_channel_one_month.sql) run for 2017-11 cohort. Cohort sizes match CAC/LTV exactly (2907/1920/1386/1091). Table below. |
 | 2 — dbt | ✅ 2026-09-30 | `int_customer_repeat_90d` (per customer_unique_id 0/1 flag) + `mart_repeat_rate_by_channel` (per channel, cohort_month). Same (channel, month) grain as the CAC and LTV marts. Slice at `WHERE month = '2017-11-01'` matches step-1 numbers exactly (cohort_size, repeaters, rate). |
-| 3 — automated | ✅ 2026-09-30 | Rebuilt by the daily GH Actions cron's `dbt run` step. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
+| 3 — automated | ✅ 2026-09-30 | Rebuilt by `dbt run` in GH Actions CI on every push to `main`. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
 
 Verified 2017-11 repeat-rate snapshot:
 
@@ -647,7 +647,7 @@ mean, and the tiny gaps are noise, not signal.
 |------|-------|----------|
 | 1 — ad hoc verified | ✅ 2026-09-30 | [`sql/adhoc/ltv_by_channel_one_month.sql`](../sql/adhoc/ltv_by_channel_one_month.sql) run for 2017-11 cohort. Cohort sizes match the CAC counts exactly (same customer set; the query re-derives channel via the same FARM_FINGERPRINT hash). Table below. |
 | 2 — dbt | ✅ 2026-09-30 | `int_customer_ltv_90d` (per customer_unique_id, sum of payments within 90d of first order) + `mart_ltv_by_channel` (per channel, first_purchase_month). Grain deliberately matches `mart_cac_by_channel` so ROAS composes trivially. Slice at `WHERE month = '2017-11-01'` matches the step-1 numbers exactly (cohort_size, ltv_total_brl, ltv_per_customer_brl all identical). |
-| 3 — automated | ✅ 2026-09-30 | Rebuilt by the daily GH Actions cron's `dbt run` step. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
+| 3 — automated | ✅ 2026-09-30 | Rebuilt by `dbt run` in GH Actions CI on every push to `main`. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
 
 Verified 2017-11 LTV-proxy snapshot:
 
@@ -677,7 +677,7 @@ Phase 6 headline`.
 |------|-------|----------|
 | 1 — ad hoc verified | ✅ 2026-09-30 | Hand-computed for 2017-11 all four channels (numerators/denominators shown in the ROAS commit message and below), then cross-checked against the mart to 4 decimal places. |
 | 2 — dbt | ✅ 2026-09-30 | `mart_roas_by_channel` (3-way INNER JOIN of CAC, LTV, repeat marts on (channel, month), 1:1:1, no aggregation). Uniqueness of (channel, month) in each input was verified empirically first (CAC 104/104, LTV 91/91, repeat 91/91), so the join cannot fan out. Result count 91 matches the min of the three input keysets. |
-| 3 — automated | ✅ 2026-09-30 | Rebuilt by the daily GH Actions cron's `dbt run` step. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
+| 3 — automated | ✅ 2026-09-30 | Rebuilt by `dbt run` in GH Actions CI on every push to `main`. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
 
 Verified 2017-11 ROAS snapshot, side-by-side hand vs mart:
 
