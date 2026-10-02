@@ -4,7 +4,7 @@
 -- upstream and every derived metric would be wrong.
 --
 -- Backs up the empirical uniqueness check we ran once by hand
--- (PROJECT_LOG § 2026-09-30 ROAS row: CAC 104/104 keys). Now it
+-- (PROJECT_LOG entry 2026-09-30 ROAS row: CAC 104/104 keys). Now it
 -- runs on every `dbt test` (including every CI run on push to
 -- main), so a regression fails loudly instead of silently
 -- corrupting the mart.

@@ -9,7 +9,7 @@
 --      customer_id is unique in BOTH tables (99,441 rows in each,
 --      one-to-one relationship confirmed 2026-09-29). No fan-out.
 --
--- Channel assignment — from docs/PROJECT_BRIEF.md §4:
+-- Channel assignment — from docs/PROJECT_BRIEF.md section 4:
 --   Deterministic FARM_FINGERPRINT hash of customer_unique_id into 4
 --   buckets, weights Organic 40 / Google Ads 25 / FB-IG 20 / Email 15.
 --   Assigned to customer_unique_id, so once a buyer's channel is set

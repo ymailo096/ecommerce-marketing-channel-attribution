@@ -150,7 +150,7 @@ or prevented.**
   or campaign × week/month), never per individual acquisition.
   Modelling it that way forces the analyst to reconcile grain before
   every join and mirrors the fan-out trap that inflates real-world CAC
-  dashboards. Documented in docs/PROJECT_BRIEF.md §3.
+  dashboards. Documented in docs/PROJECT_BRIEF.md section 3.
 - **Not the alternatives**: generating spend per customer (fake data
   hiding the trap), or per channel only (no time dimension → no CAC by
   month → can't compute cohort-aligned ROAS later).
@@ -262,9 +262,9 @@ or prevented.**
   either duplicate (venv/dbt-bigquery install → README's
   "Run it locally"; auth verification one-liner → the `bq ls`
   sanity check in the playbook) or actively **misleading given
-  current state** — §1 said "billing must be enabled, BigQuery
+  current state** — section 1 said "billing must be enabled, BigQuery
   refuses to run queries with no billing account attached", the
-  exact opposite of the sandbox path we took; §5's dbt profile
+  exact opposite of the sandbox path we took; section 5's dbt profile
   skeleton used `dataset: olist_staging`, the discarded
   per-layer-datasets pattern, not the `olist_dbt` single-dataset
   we shipped. Keeping the file would force any reader to reconcile
@@ -350,7 +350,7 @@ or prevented.**
   different filename would leave the file at root, still on the
   first screen, and solve nothing; moving under `docs/` without a
   stub would break the auto-load.
-- **Follow-through**: live `PROJECT_BRIEF.md §X` references in
+- **Follow-through**: live `PROJECT_BRIEF.md section X` references in
   `sql/adhoc/*.sql`, `python/*.py`, `README.md`, and the intro
   paragraph of `PROJECT_LOG.md` were updated by sed. Historical
   decision-log entries that discussed the earlier filename
@@ -516,7 +516,7 @@ requires calendar time, no code changes.
   and top-of-hour minute-0 slots). Fewer contended runners →
   smaller drift between scheduled and actual fire time (GitHub docs
   warn cron can be delayed 10–30 min during peak load).
-- **Why daily, not hourly/weekly**: docs/PROJECT_BRIEF.md §3.2 says "daily";
+- **Why daily, not hourly/weekly**: docs/PROJECT_BRIEF.md section 3.2 says "daily";
   GitHub repo stars/forks don't change fast enough to warrant more
   frequent polling, and less-frequent (weekly) would take too long
   to accumulate the "visible run history over actual elapsed weeks"
@@ -553,7 +553,7 @@ requires calendar time, no code changes.
   per-channel LTV within ~5% across all four channels. This is not
   noise on top of a hidden signal; it *is* the signal. Channel is a
   deterministic hash of `customer_unique_id`, independent of every
-  purchase-behaviour attribute in the data (docs/PROJECT_BRIEF.md §4), so
+  purchase-behaviour attribute in the data (docs/PROJECT_BRIEF.md section 4), so
   per-channel LTV averages have to converge to the overall mean.
 - **Not the alternatives**: biasing the channel hash on
   `customer_state` or basket size (would manufacture a story that
@@ -593,7 +593,7 @@ requires calendar time, no code changes.
 - **Unblocked**: formulas pinned next to the code that uses them.
   (Later superseded — see the "remove local editor configuration"
   entry below. The pinned note was moved out of version control; the
-  formulas themselves live in docs/PROJECT_BRIEF.md §5.)
+  formulas themselves live in docs/PROJECT_BRIEF.md section 5.)
 
 ---
 
@@ -648,7 +648,7 @@ Olist's well-known low repeat rate (single digits). Spread across
 channels is 0.6 pp, well inside sampling noise for cohorts of
 1,091–2,907. Same "flatness is expected" logic as LTV applies:
 because channel is a random hash independent of purchase behaviour
-(docs/PROJECT_BRIEF.md §4), per-channel repeat rates converge to the population
+(docs/PROJECT_BRIEF.md section 4), per-channel repeat rates converge to the population
 mean, and the tiny gaps are noise, not signal.
 
 ### LTV-proxy (90 days)
@@ -672,7 +672,7 @@ Verified 2017-11 LTV-proxy snapshot:
 **Expected finding — LTV is statistically flat across channels**
 (158–166 BRL, ~5% spread, well within the sampling noise for cohorts
 of 1,091–2,907 customers per channel). This is a direct and *intended*
-consequence of docs/PROJECT_BRIEF.md §4: channel assignment is a
+consequence of docs/PROJECT_BRIEF.md section 4: channel assignment is a
 deterministic hash of `customer_unique_id`, so it is independent of
 every purchase-behavior attribute in the data. Per-channel LTV
 averages therefore converge to the overall population mean, exactly
@@ -720,6 +720,6 @@ in the decision-log entry `Channel-LTV flatness is the actual
 Phase 6 headline`.
 
 ### A/B test
-Standalone mini-case per brief §5.5 — deliberately not on the
+Standalone mini-case per brief section 5.5 — deliberately not on the
 rule-of-three ladder (it's a one-off simulated experiment, not a
 recurring metric).

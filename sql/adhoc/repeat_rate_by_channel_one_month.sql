@@ -1,9 +1,9 @@
 -- Ad hoc 90-day repeat purchase rate by channel for the 2017-11 cohort.
--- PROJECT_BRIEF.md §10 rule-of-three step 1: verified manually before any
+-- PROJECT_BRIEF.md section 10 rule-of-three step 1: verified manually before any
 -- dbt model gets built on top. Nothing here is persisted — SELECT
 -- only, Sandbox-safe.
 --
--- Formula (locked by docs/PROJECT_BRIEF.md §5, metric #2):
+-- Formula (locked by docs/PROJECT_BRIEF.md section 5, metric #2):
 --   Repeat purchase rate (90-day cohort) =
 --       % of a channel's first-purchase-month cohort that placed
 --       a second order within 90 days of their first order.
@@ -38,7 +38,7 @@
 --
 -- Expected numbers: Olist's overall repeat purchase rate is very low
 -- (single-digit percent), and because channel is a random hash of
--- customer_unique_id (docs/PROJECT_BRIEF.md §4), per-channel rates should sit
+-- customer_unique_id (docs/PROJECT_BRIEF.md section 4), per-channel rates should sit
 -- within a couple of percentage points of each other. Any large gap
 -- would indicate a query bug, not a real signal.
 

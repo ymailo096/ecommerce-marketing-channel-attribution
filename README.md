@@ -27,7 +27,7 @@ then enforced in CI with dbt tests.
 
 ## Locked metric formulas
 
-Also written out in full in [`docs/PROJECT_BRIEF.md §5`](docs/PROJECT_BRIEF.md).
+Also written out in full in [`docs/PROJECT_BRIEF.md section 5`](docs/PROJECT_BRIEF.md).
 
 | # | Metric                     | Formula                                                                                     |
 |---|----------------------------|---------------------------------------------------------------------------------------------|

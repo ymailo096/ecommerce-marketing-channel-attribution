@@ -1,6 +1,6 @@
 -- Grain: 1 row per (channel, month) — CAC by channel by acquisition month.
 --
--- CAC formula (docs/PROJECT_BRIEF.md §5, metric #1):
+-- CAC formula (docs/PROJECT_BRIEF.md section 5, metric #1):
 --   CAC = ad_spend(channel, month) / count(new customers of that
 --         channel acquired in that month)
 --

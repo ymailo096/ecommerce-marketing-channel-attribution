@@ -5,6 +5,23 @@
 >
 > Whenever this brief and the log disagree, the log wins.
 
+> **Reframe note (2026-10-02):** Section 1 (Business Question) and
+> Section 6 (Definition of Done) below describe this project's
+> *original* v1 framing — evaluating which channel is "most
+> efficient" and ending in a budget-reallocation recommendation.
+> That framing was superseded by the 2026-10-02 methodology
+> reframe: channel and `ad_spend` are synthetic and independent of
+> real purchase behaviour by design, so neither "which channel
+> wins" nor a budget recommendation would be a meaningful
+> conclusion. The project's current scope is metric *methodology
+> and validation* (CAC / LTV-proxy / ROAS computed correctly across
+> mismatched grains), not channel evaluation. See README.md's
+> "Business question" block and docs/PROJECT_LOG.md's "Current
+> status" section for the current framing. Sections 2–5 and 7–10
+> below (locked scope, data sources, channel assignment logic,
+> locked metric formulas, phases, working conventions) still
+> reflect the final, current state and are unaffected by this note.
+
 ## 1. Business Question (the one thing this project must answer)
 
 An online store spends budget across several marketing channels. Which
@@ -19,7 +36,7 @@ question. Do not add analysis that doesn't serve it.
 
 **In scope (v1):**
 - Olist Brazilian e-commerce dataset (real orders/payments/freight/customers)
-- A synthetic `ad_spend` table (see §4)
+- A synthetic `ad_spend` table (see section 4)
 - SQL + dbt modeling in BigQuery, with dbt tests enforcing mart contracts
 - One simulated A/B test with a significance test in Python
 - GitHub Actions CI running `dbt run` + `dbt test` on every push to main
@@ -31,7 +48,7 @@ at the very end):
 - Airflow
 - Any ML / forecasting model
 - n8n (if added later, it is a thin notification layer on top of the
-  existing pipeline, not a replacement for the GitHub Actions cron core)
+  existing pipeline, not a replacement for the GitHub Actions CI core)
 - Power BI (Tableau only)
 
 ## 3. Data Sources

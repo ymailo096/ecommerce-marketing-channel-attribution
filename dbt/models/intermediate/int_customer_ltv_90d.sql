@@ -2,7 +2,7 @@
 -- 90 days of their first order (in Olist that's all of them —
 -- every order has ≥1 payment installment).
 --
--- Formula (docs/PROJECT_BRIEF.md §5, metric #3):
+-- Formula (docs/PROJECT_BRIEF.md section 5, metric #3):
 -- sum(order_payments.payment_value) over all orders of a customer
 -- placed within 90 days of that customer's first order. Aggregation
 -- up to (channel, month) happens in the mart; this model stays at

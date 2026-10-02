@@ -10,7 +10,7 @@
 --   mart_repeat_rate_by_channel  91 rows /  91 distinct keys
 -- So 1:1:1 on the composite key — INNER JOIN cannot multiply rows.
 --
--- Formula (docs/PROJECT_BRIEF.md §5, metric #4):
+-- Formula (docs/PROJECT_BRIEF.md section 5, metric #4):
 --   ROAS = LTV-proxy / CAC
 -- Identity: (ltv_total_brl / cohort_size) / (spend_brl / cohort_size)
 --         = ltv_total_brl / spend_brl.

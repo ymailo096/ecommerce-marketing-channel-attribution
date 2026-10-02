@@ -1,7 +1,7 @@
 """A/B test — did the new post-purchase email nurture lift 90-day repeat rate?
 
-Standalone mini-case per docs/PROJECT_BRIEF.md §5.5 / docs/PROJECT_BRIEF.md §5
-§5. Deliberately NOT mixed into the CAC/LTV/ROAS mart story — this
+Standalone mini-case per docs/PROJECT_BRIEF.md section 5.5 / docs/PROJECT_BRIEF.md section 5
+section 5. Deliberately NOT mixed into the CAC/LTV/ROAS mart story — this
 is the "know your stats" check, not part of channel attribution.
 
 Simulation design:

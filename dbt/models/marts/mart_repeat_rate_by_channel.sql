@@ -3,7 +3,7 @@
 -- guaranteed identical to the other two marts for any (channel, month)
 -- (all three derive from int_customer_channel and preserve its grain).
 --
--- Formula (docs/PROJECT_BRIEF.md §5, metric #2):
+-- Formula (docs/PROJECT_BRIEF.md section 5, metric #2):
 --   repeat_rate = repeaters(90d) / cohort_size
 -- stored as a FRACTION (0.0234), not a percent (2.34) — presentation
 -- multiplication by 100 is a display concern for the dashboard, not

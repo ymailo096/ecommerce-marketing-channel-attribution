@@ -2,7 +2,7 @@
 -- ∈ {0, 1} — 1 when the customer placed at least one order strictly
 -- AFTER their first_purchase_at and within 90 days of it.
 --
--- Formula (docs/PROJECT_BRIEF.md §5, metric #2): repeat purchase
+-- Formula (docs/PROJECT_BRIEF.md section 5, metric #2): repeat purchase
 -- rate is the % of a channel's first-purchase-month cohort with a
 -- second order within 90 days. This model provides the per-customer
 -- 0/1 signal; the aggregation to (channel, month) percent lives in

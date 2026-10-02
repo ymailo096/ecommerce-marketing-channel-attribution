@@ -1,9 +1,9 @@
 -- Ad hoc LTV-proxy (90-day window) by channel for the 2017-11 cohort.
--- PROJECT_BRIEF.md §10 rule-of-three step 1: verified manually before any
+-- PROJECT_BRIEF.md section 10 rule-of-three step 1: verified manually before any
 -- dbt model gets built on top. Nothing here is persisted — SELECT
 -- only, Sandbox-safe.
 --
--- Formula (locked by docs/PROJECT_BRIEF.md §5, metric #3):
+-- Formula (locked by docs/PROJECT_BRIEF.md section 5, metric #3):
 --   LTV-proxy(90d)(channel) =
 --       sum(order_payments.payment_value) over all orders of a customer
 --       placed within 90 days of that customer's first order,
@@ -52,7 +52,7 @@ first_purchase AS (
 
 channels AS (
   -- Assign channel via deterministic hash of customer_unique_id
-  -- (docs/PROJECT_BRIEF.md §4 channel assignment, weights 40/25/20/15).
+  -- (docs/PROJECT_BRIEF.md section 4 channel assignment, weights 40/25/20/15).
   SELECT
     fp.customer_unique_id,
     fp.first_purchase_at,

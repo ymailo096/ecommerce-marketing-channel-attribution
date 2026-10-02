@@ -1,11 +1,11 @@
 -- Ad hoc CAC by channel for the single busiest month in Olist.
--- PROJECT_BRIEF.md §10 rule-of-three step 1: verified manually before anything
+-- PROJECT_BRIEF.md section 10 rule-of-three step 1: verified manually before anything
 -- else gets built on top. Nothing here is persisted — SELECT only,
 -- Sandbox-safe.
 --
 -- Contract:
 --   * Channel is a deterministic hash of customer_unique_id → 4 buckets
---     with the weights from PROJECT_BRIEF.md §4 (Organic 40, Google Ads 25,
+--     with the weights from PROJECT_BRIEF.md section 4 (Organic 40, Google Ads 25,
 --     FB/IG 20, Email/Referral 15). Same customer → always same channel.
 --   * First-purchase month per customer_unique_id = the month of that
 --     customer's earliest order_purchase_timestamp.
@@ -14,7 +14,7 @@
 --   * CAC(channel) = ad_spend(channel, busiest_month)
 --                    / (new customers acquired in that channel in that month).
 --
--- Fan-out guardrail (PROJECT_BRIEF.md §8): `ad_spend` is at (channel, month)
+-- Fan-out guardrail (PROJECT_BRIEF.md section 8): `ad_spend` is at (channel, month)
 -- grain. We first aggregate customers to (channel, month) in the
 -- `new_customers` CTE, then join `ad_spend` on those two keys. Never
 -- join `ad_spend` directly onto `orders` or `order_items`.
@@ -66,7 +66,7 @@ busiest_month AS (
 ),
 
 -- Aggregate new customers to (channel, month) grain BEFORE joining to
--- ad_spend — PROJECT_BRIEF.md §8 fan-out rule.
+-- ad_spend — PROJECT_BRIEF.md section 8 fan-out rule.
 new_customers AS (
   SELECT
     ch.channel,
