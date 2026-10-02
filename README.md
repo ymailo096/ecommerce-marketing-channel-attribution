@@ -36,6 +36,8 @@ Also written out in full in [`docs/PROJECT_BRIEF.md §5`](docs/PROJECT_BRIEF.md)
 | 3 | LTV-proxy (90d)            | `SUM(payment_value)` within 90 days of each customer's first order, aggregated by channel   |
 | 4 | ROAS                       | `LTV-proxy / CAC`                                                                           |
 
+ROAS here is an efficiency ratio computed within one synthetic cohort (LTV-proxy over CAC, same customers, same window) — not a blended, platform-reported ROAS or MER pulled from a live ad account. Treat the numbers below as a relative comparison across channels inside this dataset, not a benchmark against real ad-platform figures.
+
 A separate, standalone A/B-test simulation (repeat-rate lift, two-proportion z-test in stdlib only) lives in [`python/ab_test_repeat_rate.py`](python/ab_test_repeat_rate.py) — deliberately kept out of the channel-attribution metrics above; see [`docs/PROJECT_LOG.md`](docs/PROJECT_LOG.md) for the full result.
 
 ## Verified 2017-11 snapshot (Olist's Black Friday peak)
@@ -46,6 +48,12 @@ A separate, standalone A/B-test simulation (repeat-rate lift, two-proportion z-t
 | Email/Referral          |         1,091 |    1,688.12 |      1.55 |             158.09 |       1.74% | 102.17 |
 | Facebook/Instagram Ads  |         1,386 |    6,145.24 |      4.43 |             158.24 |       2.09% |  35.69 |
 | Google Ads              |         1,920 |   12,932.00 |      6.74 |             164.99 |       2.34% |  24.50 |
+
+Note: in a real business, an Organic CAC this low (0.40 BRL) would
+not read as "highly efficient" — it would read as a broken-tracking
+signal (untagged paid traffic misattributed to Organic, missing UTM
+parameters, or a pixel/tag failure). See the methodological lesson
+below for why that matters more than the number itself.
 
 Every number here was verified twice: once via a hand-computed ad hoc
 SQL query, then again as the same slice from the corresponding dbt
