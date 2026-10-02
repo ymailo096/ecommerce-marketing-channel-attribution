@@ -45,11 +45,11 @@ converge to the population mean.
 
 The takeaway isn't "shift budget into Organic". It's that **an
 unusually cheap CAC should trigger a data-quality check before any
-budget decision**. In a real business, a near-zero CAC on a
-paid-looking channel is more likely to reflect under-reported
-spend (SEO tools, content operations, referral bonuses, brand
-halo) than a genuine 17× cost advantage; the methodological
-discipline is to verify the spend data before touching the budget.
+budget decision**. In a real business, a near-zero CAC on any
+channel is more likely to reflect under-reported spend (SEO
+tools, content operations, referral bonuses, brand halo) than a
+genuine cost advantage; the methodological discipline is to verify
+the spend data before touching the budget.
 
 ## Data contract / assumptions
 
@@ -148,6 +148,8 @@ Also written out in full in [`docs/PROJECT_BRIEF.md §5`](docs/PROJECT_BRIEF.md)
 | 2 | Repeat purchase rate (90d) | % of channel's first-month cohort with a 2nd order within 90 days                           |
 | 3 | LTV-proxy (90d)            | `SUM(payment_value)` within 90 days of each customer's first order, aggregated by channel   |
 | 4 | ROAS                       | `LTV-proxy / CAC`                                                                           |
+
+A separate, standalone A/B-test simulation (repeat-rate lift, two-proportion z-test in stdlib only) lives in [`python/ab_test_repeat_rate.py`](python/ab_test_repeat_rate.py) — deliberately kept out of the channel-attribution metrics above; see [`docs/PROJECT_LOG.md`](docs/PROJECT_LOG.md) for the full result.
 
 ## Run it locally
 

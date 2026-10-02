@@ -21,7 +21,7 @@ def main() -> None:
     dataset.location = cfg["location"]
     dataset.description = (
         "Raw Olist tables + synthetic ad_spend, loaded via batch LOAD jobs. "
-        "Managed by python/load_olist_raw.py and python/generate_ad_spend.py."
+        "Managed by python/load_olist_raw.py and python/generate_ad_spend_csv.py."
     )
 
     try:
