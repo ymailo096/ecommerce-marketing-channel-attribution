@@ -74,6 +74,10 @@ Read this before drawing any conclusions from the numbers above.
 - **Everything else is real.** Orders, customers, and payments are
   the actual anonymized Brazilian marketplace dataset from Olist on
   Kaggle — 99,441 orders across 2016-09 → 2018-10.
+- **Contracts enforced on every change.** `dbt test` enforces the
+  composite `(channel, month)` uniqueness of every mart, `not_null`
+  on `stg_ad_spend`, and a no-exact-zero-CAC guard; a change that
+  would break any of these fails CI instead of landing in `olist_dbt`.
 
 ## Stack
 
@@ -100,7 +104,7 @@ Actions (`dbt run` + `dbt test` on push) · Tableau Public
         │  customers, orders, order_items, order_payments,        │
         │  ad_spend (channel+month grain)                         │
         └───────────────────────────┬─────────────────────────────┘
-                                    │  dbt run (CI on push)
+                                    │  dbt run
                                     ▼
         ┌─────────────────────────────────────────────────────────┐
         │           BigQuery — dataset `olist_dbt`                │
@@ -174,26 +178,20 @@ bq load --source_format=CSV --skip_leading_rows=1 --location=EU --replace \
   --schema="channel:STRING,month:DATE,spend_brl:NUMERIC" \
   olist_raw.ad_spend data/synthetic/ad_spend.csv
 
-# 3. Rebuild the dbt marts.
+# 3. Create the Python environment and install dependencies.
+python3 -m venv .venv
 source .venv/bin/activate
+pip install -r requirements.txt
+pip install dbt-bigquery
+
+# 4. Rebuild the dbt marts.
 cd dbt && dbt run           # materializes 13 tables in olist_dbt
 dbt test                    # 8 contracts: PK uniqueness per mart, not_null, no-zero-CAC
 
-# 4. Ad hoc verification query (rule-of-three step 1 — matches mart exactly).
+# 5. Ad hoc verification query (rule-of-three step 1 — matches mart exactly).
 bq query --use_legacy_sql=false --location=EU --format=pretty \
   --nouse_cache < sql/adhoc/cac_by_channel_one_month.sql
 ```
-
-## Automation
-
-CI in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs
-`dbt run` + `dbt test` against BigQuery on every push to `main`
-(and on manual dispatch), authenticating with a dedicated
-least-privilege service account (`roles/bigquery.jobUser` +
-`roles/bigquery.dataEditor`, nothing else). Any change that would
-break a mart contract (composite `(channel, month)` uniqueness per
-mart, `not_null` on `stg_ad_spend`, no-exact-zero-CAC guard) fails
-CI instead of landing in `olist_dbt`.
 
 ## What's where
 
@@ -206,5 +204,4 @@ CI instead of landing in `olist_dbt`.
 | `sql/adhoc/`                      | One-off verified queries (rule-of-three step 1)            |
 | `dbt/models/`                     | staging → intermediate → marts (rule-of-three step 2)      |
 | `python/`                         | `ad_spend` generator; mart-CSV export for the Tableau feed |
-| `.github/workflows/`              | CI on push (`dbt run` + `dbt test`) — rule-of-three step 3 |
 | `data/olist/`, `data/synthetic/`  | Local CSVs (gitignored)                                    |
