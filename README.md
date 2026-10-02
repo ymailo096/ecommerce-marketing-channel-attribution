@@ -40,7 +40,7 @@ A separate, standalone A/B-test simulation (repeat-rate lift, two-proportion z-t
 
 ## Verified 2017-11 snapshot (Olist's Black Friday peak)
 
-| Channel                 | New customers | Spend (BRL) | CAC (BRL) | LTV/customer (BRL) | Repeat rate | ROAS   |
+| Channel                 | New customers | Spend (BRL) | CAC (BRL) | 90d LTV-proxy (BRL) | Repeat rate | ROAS   |
 |-------------------------|--------------:|------------:|----------:|-------------------:|------------:|-------:|
 | Organic                 |         2,907 |    1,149.88 |      0.40 |             165.65 |       1.96% | 418.78 |
 | Email/Referral          |         1,091 |    1,688.12 |      1.55 |             158.09 |       1.74% | 102.17 |
@@ -54,13 +54,17 @@ mart — both agree to at least 4 decimal places. Full evidence in
 
 ## Methodological lesson
 
-With this channel-neutral customer base, **ROAS is driven by CAC
-alone**. Organic looks ~17× cheaper than Google Ads on CAC, and
-LTV per customer is statistically flat across all four channels
-(158–166 BRL, ~5% spread, well inside sampling noise for cohorts
-of 1,091–2,907). That flatness is by design: channel is
-independent of purchase behaviour, so per-channel LTV averages
-converge to the population mean.
+With this channel-neutral customer base, **because LTV is
+approximately equal across channels by design, the observed ROAS
+differences are primarily driven by CAC.** Organic looks ~17×
+cheaper than Google Ads on CAC. 90d LTV-proxy per customer ranges
+158–166 BRL across the four channels (~5% spread) — consistent
+with the design, since channel assignment is independent of
+customer behaviour and per-channel LTV averages should converge
+to the population mean. This was checked with a one-way Welch's
+ANOVA on customer-level 90-day LTV-proxy by channel
+(F = 0.71, p = 0.55), which found no evidence of a channel
+effect at α = 0.05.
 
 The takeaway isn't "shift budget into Organic". It's that **an
 unusually cheap CAC should trigger a data-quality check before any

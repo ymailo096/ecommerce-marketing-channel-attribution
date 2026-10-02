@@ -11,7 +11,7 @@
 --
 -- Aligned with the CAC ad hoc query: restricted to the 2017-11
 -- cohort (Olist's busiest month = Black Friday) so we can eyeball
--- LTV per customer next to CAC per customer for the same cohort.
+-- 90d LTV-proxy next to CAC per customer for the same cohort.
 --
 -- Grain trace (standard JOIN granularity check):
 --   * `orders`         — 1 row per order (99,441)

@@ -648,10 +648,11 @@ mean, and the tiny gaps are noise, not signal.
 | 1 — ad hoc verified | ✅ 2026-09-30 | [`sql/adhoc/ltv_by_channel_one_month.sql`](../sql/adhoc/ltv_by_channel_one_month.sql) run for 2017-11 cohort. Cohort sizes match the CAC counts exactly (same customer set; the query re-derives channel via the same FARM_FINGERPRINT hash). Table below. |
 | 2 — dbt | ✅ 2026-09-30 | `int_customer_ltv_90d` (per customer_unique_id, sum of payments within 90d of first order) + `mart_ltv_by_channel` (per channel, first_purchase_month). Grain deliberately matches `mart_cac_by_channel` so ROAS composes trivially. Slice at `WHERE month = '2017-11-01'` matches the step-1 numbers exactly (cohort_size, ltv_total_brl, ltv_per_customer_brl all identical). |
 | 3 — automated | ✅ 2026-09-30 | Rebuilt by `dbt run` in GH Actions CI on every push to `main`. First successful CI run: [36717219733](https://github.com/ymailo096/ecommerce-marketing-channel-attribution/actions/runs/36717219733). |
+| 4 — statistical validation | ✅ 2026-10-02 | One-way Welch's ANOVA on customer-level 90-day LTV-proxy by channel (2017-11 cohort, n=7,304): F(3, 3208.09) = 0.71, p = 0.55, η² = 0.0003 — fail to reject at α=0.05, no evidence of a channel effect, which backs the "flat by design" claim with a real test instead of eyeballing the spread. See [`../python/ltv_channel_anova.py`](../python/ltv_channel_anova.py). |
 
 Verified 2017-11 LTV-proxy snapshot:
 
-| Channel                 | Cohort size | LTV total (BRL) | LTV per customer (BRL) |
+| Channel                 | Cohort size | LTV total (BRL) | 90d LTV-proxy (BRL)    |
 |-------------------------|-------------|-----------------|------------------------|
 | Organic                 | 2,907       | 481,541.18      | 165.65                 |
 | Google Ads              | 1,920       | 316,773.00      | 164.99                 |
@@ -699,7 +700,7 @@ Email 102.1716).
 
 **Interpretation caveat**: these ROAS numbers reflect the synthetic
 ad_spend ranges we chose (Organic 500–1500 BRL/month vs Google Ads
-8000–15000) multiplied by a quasi-constant LTV per customer
+8000–15000) multiplied by a quasi-constant 90d LTV-proxy per customer
 (~158–166 BRL, independent of channel by construction). The 17×
 Organic-vs-Google ordering is therefore *not* a signal that Organic
 is a better acquisition channel; it's the direct arithmetic
