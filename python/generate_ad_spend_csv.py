@@ -12,9 +12,15 @@ The bq CLI takes it from there:
       --replace --schema="channel:STRING,month:DATE,spend_brl:NUMERIC" \\
       olist_raw.ad_spend data/synthetic/ad_spend.csv
 
-Spend ranges are picked so Organic ends up cheap on CAC alone but
-loses on ROAS once LTV lands — that's the "misleading metric" contrast
-the whole project is designed to expose.
+Spend ranges are picked so Organic ends up by far the cheapest on
+CAC. Because LTV is flat across channels by design (channel is
+independent of purchase behaviour — see int_customer_channel.sql),
+that cheap CAC carries straight through to a far higher ROAS too;
+it does not reverse. The "misleading metric" this project exposes
+isn't a CAC-vs-ROAS ranking flip — it's that an unusually cheap
+CAC should be read as a data-quality flag (likely under-reported
+spend), not a genuine efficiency win. See README's "Methodological
+lesson" section.
 """
 from __future__ import annotations
 

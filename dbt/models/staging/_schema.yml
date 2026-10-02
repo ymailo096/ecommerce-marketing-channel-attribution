@@ -1,7 +1,7 @@
 version: 2
 
 # Column-level tests on staging. dbt built-ins only (no packages).
-# These run on every `dbt test` and every CI daily-cron run.
+# These run on every `dbt test`, including every CI run on push to main.
 
 models:
   - name: stg_ad_spend

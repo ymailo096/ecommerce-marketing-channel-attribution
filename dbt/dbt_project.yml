@@ -1,8 +1,8 @@
-name: 'ecommerce_attribution'
+name: 'marketing_metrics_rule_of_three'
 version: '1.0.0'
 config-version: 2
 
-profile: 'ecommerce_attribution'
+profile: 'marketing_metrics_rule_of_three'
 
 model-paths: ["models"]
 target-path: "target"
@@ -15,7 +15,7 @@ clean-targets:
 # / DTS, not CTAS/DDL. dbt's default `table` materialization uses CTAS,
 # which works in sandbox (verified 2026-09-30).
 models:
-  ecommerce_attribution:
+  marketing_metrics_rule_of_three:
     +materialized: table
     staging:
       +tags: staging

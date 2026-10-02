@@ -5,8 +5,9 @@
 --
 -- Backs up the empirical uniqueness check we ran once by hand
 -- (PROJECT_LOG § 2026-09-30 ROAS row: CAC 104/104 keys). Now it
--- runs on every `dbt test` (including the CI daily cron), so a
--- regression fails loudly instead of silently corrupting the mart.
+-- runs on every `dbt test` (including every CI run on push to
+-- main), so a regression fails loudly instead of silently
+-- corrupting the mart.
 
 select
     channel,

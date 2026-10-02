@@ -12,7 +12,7 @@
 # env_var below. The service account is `github-actions-runner@…`
 # with only `roles/bigquery.jobUser` + `roles/bigquery.dataEditor`
 # (see PROJECT_LOG's Phase-4 decision entry).
-ecommerce_attribution:
+marketing_metrics_rule_of_three:
   target: ci
   outputs:
     ci:

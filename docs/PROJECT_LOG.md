@@ -171,6 +171,15 @@ or prevented.**
 - **Unblocked**: verified 2017-11 Organic CAC = 0.40 BRL, which is
   the exact "17× cheaper than Google Ads" hook the analysis will
   eventually explain away with LTV.
+- **Correction (2026-10-02)**: the original hypothesis here — that
+  ROAS would reverse the CAC ranking once LTV landed — turned out
+  to be incompatible with the LTV-flat-by-design decision (see the
+  LTV/ROAS section below and README's Methodological lesson). ROAS
+  does not reverse; it mirrors the CAC ranking exactly, because
+  LTV is constant across channels by construction. The actual
+  "misleading metric" lesson this project ended up demonstrating
+  is different: a near-zero CAC is a data-quality red flag, not
+  a genuine efficiency signal.
 
 ### 2026-09-29 — Deterministic FARM_FINGERPRINT hash for channel assignment
 - **Why this**: same customer_unique_id → same channel across every
@@ -613,8 +622,9 @@ Verified 2017-11 CAC snapshot (both ad hoc and mart):
 | Google Ads              | 1,920         | 12,932.00   | 6.74      |
 
 Channel split: 39.8 / 26.3 / 19.0 / 14.9 (target 40 / 25 / 20 / 15).
-Organic is 17× cheaper than Google Ads on CAC. This is the exact
-"misleading metric" the LTV/ROAS marts are designed to expose next.
+Organic is 17× cheaper than Google Ads on CAC. See the 2026-10-02
+correction above the CAC section: this ended up demonstrating a
+data-quality lesson, not a CAC-vs-ROAS ranking reversal.
 
 ### Repeat purchase rate (90-day cohort)
 
