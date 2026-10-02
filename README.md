@@ -68,12 +68,19 @@ budget decision**. In a real business, a near-zero CAC on any
 channel is more likely to reflect under-reported spend (SEO
 tools, content operations, referral bonuses, brand halo) than a
 genuine cost advantage; the methodological discipline is to verify
-the spend data before touching the budget.
+the spend data before touching the budget — and to confirm what
+"spend" actually covers before comparing CAC across channels at all.
 
 ## Data contract / assumptions
 
 Read this before drawing any conclusions from the numbers above.
 
+- **CAC here is media spend only, not full CAC.** `ad_spend` captures
+  channel media cost alone — it excludes agency fees, creative
+  production, tooling, salaries, affiliate payouts, discounts,
+  promotions, and referral incentives that a real CAC would include.
+  Treat the numbers above as a blended channel acquisition cost based
+  on synthetic spend, not a production-grade CAC.
 - **Channel is synthetic.** Olist ships no channel/UTM/campaign field,
   so channel is assigned by a deterministic
   `MOD(ABS(FARM_FINGERPRINT(customer_unique_id)), 100)` bucket
