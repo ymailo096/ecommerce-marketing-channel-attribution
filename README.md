@@ -230,5 +230,5 @@ bq query --use_legacy_sql=false --location=EU --format=pretty \
 | `docs/tableau_setup.md`           | Tableau Public dashboard build + publish                   |
 | `sql/adhoc/`                      | One-off verified queries (rule-of-three step 1)            |
 | `dbt/models/`                     | staging → intermediate → marts (rule-of-three step 2)      |
-| `python/`                         | `ad_spend` generator; mart-CSV export for the Tableau feed |
+| `python/`                         | `ad_spend` generator; BigQuery/dbt data setup scripts; ANOVA statistical validation; A/B-test simulation; mart-CSV export for Tableau |
 | `data/olist/`, `data/synthetic/`  | Local CSVs (gitignored)                                    |
