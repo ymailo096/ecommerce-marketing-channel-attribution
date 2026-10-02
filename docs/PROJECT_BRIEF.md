@@ -19,12 +19,10 @@ question. Do not add analysis that doesn't serve it.
 
 **In scope (v1):**
 - Olist Brazilian e-commerce dataset (real orders/payments/freight/customers)
-- A daily-refreshed "live" data source via the GitHub API (stars/forks/
-  contributors for a couple of repos)
 - A synthetic `ad_spend` table (see §4)
-- SQL + dbt modeling in BigQuery
+- SQL + dbt modeling in BigQuery, with dbt tests enforcing mart contracts
 - One simulated A/B test with a significance test in Python
-- Scheduling via GitHub Actions (cron)
+- GitHub Actions CI running `dbt run` + `dbt test` on every push to main
 - A Tableau Public dashboard
 - A GitHub README + (optionally) a mirrored Notion page
 
@@ -40,10 +38,7 @@ at the very end):
 
 1. **Olist dataset** (Kaggle, real anonymized Brazilian marketplace data):
    orders, order_items, order_payments, customers, order_reviews.
-2. **GitHub API**: a small Python script pulls stars/forks/contributor counts
-   for a few chosen repos daily. This is the genuinely "live" piece that
-   proves the pipeline runs on a real schedule, not a one-off snapshot.
-3. **Synthetic `ad_spend` table**: generated with a fixed random seed
+2. **Synthetic `ad_spend` table**: generated with a fixed random seed
    (reproducible), at **channel + month** granularity, deliberately coarser
    than order-level. This granularity mismatch is intentional: it forces
    correct join/aggregation logic (aggregate customers to channel+month
@@ -88,24 +83,23 @@ channel):
   channel Y. Recommend reallocating N% of budget from X to Y, and here is
   why." Backed by the actual numbers from the marts.
 - A working Tableau Public dashboard on top of the marts layer.
-- Automation that has actually run on a schedule (GitHub Actions cron) for
-  at least a couple of weeks, with a visible run history as proof.
+- GitHub Actions CI running `dbt run` + `dbt test` on every push to main,
+  so any change that would break a mart contract fails CI before landing.
 
 ## 7. Phases
 
-1. **Data**: load Olist as the core business tables; write the GitHub API
-   pull script; generate the synthetic `ad_spend` table; assign channel per
-   customer.
+1. **Data**: load Olist as the core business tables; generate the
+   synthetic `ad_spend` table; assign channel per customer.
 2. **Modeling (SQL/dbt)**: staging (raw tables as-is) → intermediate
    (granularity reconciliation, cohort = first-purchase month) → marts
    (repeat-purchase rate by cohort, LTV-proxy, CAC/ROAS by channel).
    Document *why* any UNION ALL / aggregation choice was made, not just what
    it does.
 3. **A/B test**: simulate the experiment, compute significance in Python.
-4. **Automation**: GitHub Actions cron runs the GitHub API pull + `dbt run`
-   on a schedule for real, over multiple weeks. n8n (optional, later) sits
-   only at the notification/delivery end (e.g. posting a summary to Slack),
-   and never replaces this core.
+4. **CI quality gate**: GitHub Actions runs `dbt run` + `dbt test` against
+   BigQuery on every push to main. The mart contracts (composite PK
+   uniqueness, not_null on `stg_ad_spend`, no-exact-zero CAC) are the
+   gate; CI fails if any assumption breaks.
 5. **Visualization**: Tableau Public dashboard over the marts; retention
    curve, LTV/ROAS by channel, funnel.
 6. **Documentation**: GitHub README explaining the architecture and every
@@ -132,9 +126,9 @@ channel):
 
 ```
 /sql/          -- staging / intermediate / marts SQL (or dbt models)
-/python/       -- GitHub API pull script, ad_spend generator, A/B test stats
+/python/       -- ad_spend generator, A/B test stats, mart-CSV export
 /dbt/          -- dbt project (if used instead of raw SQL folders)
-/.github/workflows/  -- the cron workflow(s)
+/.github/workflows/  -- CI workflow(s)
 README.md
 ```
 

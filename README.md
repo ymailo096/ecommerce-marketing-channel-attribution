@@ -1,21 +1,23 @@
 # E-commerce Marketing Channel Attribution
 
-**Business question:** which marketing channel is actually most
-efficient once you look past the cost of the first order — i.e. how
-much revenue does a customer generate over the following months after
-acquisition? Every metric and every SQL model in this project exists
-to answer that one question.
+This project demonstrates correctly constructing and validating
+marketing-attribution metrics (CAC, LTV-proxy, repeat purchase
+rate, ROAS) on a real e-commerce order dataset (Olist) joined to
+a synthetic ad-spend/channel layer, using a rule-of-three
+methodology: each metric is first computed as an ad hoc SQL query,
+then re-expressed as a dbt model that matches the ad hoc result
+exactly, then enforced in CI with dbt tests.
 
-CAC / LTV / ROAS by acquisition channel on Olist data — focus on
-grain reconciliation (ad spend at channel-month vs. orders at
-customer level) and why a cheap CAC can be a data-quality red flag,
-not a growth signal.
-
-> **Channel assignment and `ad_spend` are synthetic** (Olist doesn't
-> ship either — channel is a deterministic FARM_FINGERPRINT hash of
-> `customer_unique_id` into 4 weighted buckets, `ad_spend` is a
-> seeded per-`(channel, month)` table). Orders, customers, and
-> payments are the real anonymized Brazilian marketplace data.
+> **Channel assignment and `ad_spend` are synthetic**, with a
+> fixed seed and independent of real purchase behaviour by design.
+> Olist ships no channel/UTM field, so each customer is bucketed by
+> a deterministic `FARM_FINGERPRINT(customer_unique_id)` hash into
+> 4 weighted channels, and `ad_spend` is generated per
+> `(channel, month)` from a seeded Python script. Orders,
+> customers, and payments are the real anonymized Brazilian
+> marketplace data. **Cross-channel comparisons in the tables
+> below are illustrative of the methodology, not real investment
+> recommendations.**
 
 ## Verified 2017-11 snapshot (Olist's Black Friday peak)
 
@@ -31,29 +33,23 @@ SQL query, then again as the same slice from the corresponding dbt
 mart — both agree to at least 4 decimal places. Full evidence in
 [`docs/PROJECT_LOG.md`](docs/PROJECT_LOG.md).
 
-## Finding
+## Methodological lesson
 
-With a channel-neutral customer base, **ROAS is effectively driven
-by CAC alone**. Organic looks ~17× cheaper than Google Ads on CAC.
-LTV per customer is statistically flat across channels (158–166 BRL,
-~5% spread — well inside sampling noise for cohorts of
-1,091–2,907). This flatness is by design: channel is a deterministic
-hash of `customer_unique_id`, independent of any purchase behaviour,
-so per-channel LTV averages have to converge to the population mean.
-Do **not** infer that Organic customers are better or worse than
-Google Ads customers. Statistically they're the same.
+With this channel-neutral customer base, **ROAS is driven by CAC
+alone**. Organic looks ~17× cheaper than Google Ads on CAC, and
+LTV per customer is statistically flat across all four channels
+(158–166 BRL, ~5% spread, well inside sampling noise for cohorts
+of 1,091–2,907). That flatness is by design: channel is
+independent of purchase behaviour, so per-channel LTV averages
+converge to the population mean.
 
-## Recommendation
-
-The right first business step is **not** "shift budget into
-Organic". It is verifying whether channel-level spend is
-under-reported at the source. A near-zero CAC on any paid-looking
-channel is a data-quality red flag before it is an investment
-thesis. Don't move budget until you know Organic's line item
-actually captures its cost (SEO tools, content ops, referral
-bonuses, brand halo — all of which have real vendor invoices in a
-real business, none of which are captured if "Organic" defaults to
-zero-spend in the source system).
+The takeaway isn't "shift budget into Organic". It's that **an
+unusually cheap CAC should trigger a data-quality check before any
+budget decision**. In a real business, a near-zero CAC on a
+paid-looking channel is more likely to reflect under-reported
+spend (SEO tools, content operations, referral bonuses, brand
+halo) than a genuine 17× cost advantage; the methodological
+discipline is to verify the spend data before touching the budget.
 
 ## Data contract / assumptions
 
@@ -82,7 +78,7 @@ Read this before drawing any conclusions from the numbers above.
 ## Stack
 
 BigQuery · dbt · Python (stdlib + `google-cloud-bigquery`) · GitHub
-Actions (daily cron) · Tableau Public
+Actions (`dbt run` + `dbt test` on push) · Tableau Public
 
 ## Live dashboard
 
@@ -93,25 +89,25 @@ Actions (daily cron) · Tableau Public
 ## Architecture
 
 ```
-        ┌─────────────────────────┐      ┌────────────────────────┐
-        │ Olist Kaggle CSVs (raw) │      │ GitHub API (daily pull)│
-        └────────────┬────────────┘      └───────────┬────────────┘
-                     │  bq load                       │  GH Actions cron
-                     ▼                                ▼
+        ┌─────────────────────────┐      ┌──────────────────────────┐
+        │ Olist Kaggle CSVs (raw) │      │ Synthetic ad_spend        │
+        │  (manual download)      │      │  (python/, seeded)        │
+        └────────────┬────────────┘      └────────────┬──────────────┘
+                     │  bq load                        │  bq load
+                     ▼                                 ▼
         ┌─────────────────────────────────────────────────────────┐
         │            BigQuery — dataset `olist_raw`               │
         │  customers, orders, order_items, order_payments,        │
-        │  ad_spend (synthetic, seeded, channel+month grain),     │
-        │  github_metrics (append-only time series)               │
+        │  ad_spend (channel+month grain)                         │
         └───────────────────────────┬─────────────────────────────┘
-                                    │  dbt run
+                                    │  dbt run (CI on push)
                                     ▼
         ┌─────────────────────────────────────────────────────────┐
         │           BigQuery — dataset `olist_dbt`                │
         │                                                         │
         │  staging       stg_customers, stg_orders,               │
         │                stg_order_items, stg_order_payments,     │
-        │                stg_ad_spend, stg_github_metrics         │
+        │                stg_ad_spend                             │
         │                                                         │
         │  intermediate  int_customer_channel                     │
         │                  (per customer_unique_id)               │
@@ -180,7 +176,8 @@ bq load --source_format=CSV --skip_leading_rows=1 --location=EU --replace \
 
 # 3. Rebuild the dbt marts.
 source .venv/bin/activate
-cd dbt && dbt run           # materializes 14 tables in olist_dbt
+cd dbt && dbt run           # materializes 13 tables in olist_dbt
+dbt test                    # 8 contracts: PK uniqueness per mart, not_null, no-zero-CAC
 
 # 4. Ad hoc verification query (rule-of-three step 1 — matches mart exactly).
 bq query --use_legacy_sql=false --location=EU --format=pretty \
@@ -189,13 +186,14 @@ bq query --use_legacy_sql=false --location=EU --format=pretty \
 
 ## Automation
 
-Daily cron in [`.github/workflows/daily.yml`](.github/workflows/daily.yml)
-pulls fresh GitHub metrics + re-runs the whole dbt DAG at 06:00 UTC
-against BigQuery, authenticating with a dedicated least-privilege
-service account (`roles/bigquery.jobUser` +
-`roles/bigquery.dataEditor`, nothing else). The visible run history
-on the Actions tab is the "genuinely live" evidence per
-docs/PROJECT_BRIEF.md §3.2.
+CI in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs
+`dbt run` + `dbt test` against BigQuery on every push to `main`
+(and on manual dispatch), authenticating with a dedicated
+least-privilege service account (`roles/bigquery.jobUser` +
+`roles/bigquery.dataEditor`, nothing else). Any change that would
+break a mart contract (composite `(channel, month)` uniqueness per
+mart, `not_null` on `stg_ad_spend`, no-exact-zero-CAC guard) fails
+CI instead of landing in `olist_dbt`.
 
 ## What's where
 
@@ -207,6 +205,6 @@ docs/PROJECT_BRIEF.md §3.2.
 | `docs/tableau_setup.md`           | Tableau Public dashboard build + publish                   |
 | `sql/adhoc/`                      | One-off verified queries (rule-of-three step 1)            |
 | `dbt/models/`                     | staging → intermediate → marts (rule-of-three step 2)      |
-| `python/`                         | ad_spend generator, GitHub API pull                        |
-| `.github/workflows/`              | Daily cron (rule-of-three step 3)                          |
+| `python/`                         | `ad_spend` generator; mart-CSV export for the Tableau feed |
+| `.github/workflows/`              | CI on push (`dbt run` + `dbt test`) — rule-of-three step 3 |
 | `data/olist/`, `data/synthetic/`  | Local CSVs (gitignored)                                    |

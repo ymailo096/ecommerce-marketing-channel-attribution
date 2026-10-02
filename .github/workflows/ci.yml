@@ -1,0 +1,64 @@
+name: ci
+
+# Runs `dbt run` + `dbt test` against BigQuery on every push to main
+# (and on manual dispatch). Treats dbt tests as a merge gate: a push
+# that would break mart contracts (composite PK uniqueness, not_null,
+# no-exact-zero CAC) fails CI instead of landing bad data in olist_dbt.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  # If several commits land in a short window, keep the newest run and
+  # cancel the in-flight older one; the older build's state would be
+  # overwritten by the newer one anyway.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read       # workflow only reads the repo, never writes
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --only-binary=:all: \
+            dbt-bigquery \
+            google-cloud-bigquery
+
+      - name: Authenticate to GCP
+        # Writes the SA keyfile to a temp path and exports
+        # GOOGLE_APPLICATION_CREDENTIALS for downstream steps.
+        # dbt/profiles.yml reads the same env var.
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: dbt run
+        working-directory: dbt
+        env:
+          DBT_PROFILES_DIR: .
+        run: dbt run
+
+      - name: dbt test
+        # Enforces contracts (composite PK uniqueness on every mart,
+        # not_null on stg_ad_spend, no-exact-zero-cac guard) on every
+        # CI run. Fails the workflow if any assumption breaks.
+        working-directory: dbt
+        env:
+          DBT_PROFILES_DIR: .
+        run: dbt test

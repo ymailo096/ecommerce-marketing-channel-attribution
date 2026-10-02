@@ -24,9 +24,3 @@ sources:
           1 row per (channel, month) — synthetic, seeded. Deliberately
           coarser than orders; downstream metrics must aggregate to
           (channel, month) grain BEFORE joining to this.
-      - name: github_metrics
-        description: >
-          1 row per (fetched_at, repo) — appended daily by the
-          .github/workflows/daily.yml cron via python/github_metrics_pull.py.
-          The "genuinely live" data source per docs/PROJECT_BRIEF.md §3.2 —
-          proves the pipeline runs on a real schedule.
