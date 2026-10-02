@@ -1,12 +1,18 @@
 # Marketing Metrics Methodology (CAC · LTV · ROAS)
 
-This project demonstrates correctly constructing and validating
-marketing-attribution metrics (CAC, LTV-proxy, repeat purchase
-rate, ROAS) on a real e-commerce order dataset (Olist) joined to
-a synthetic ad-spend/channel layer, using a rule-of-three
-methodology: each metric is first computed as an ad hoc SQL query,
-then re-expressed as a dbt model that matches the ad hoc result
-exactly, then enforced in CI with dbt tests.
+> **Business question:** How can marketing teams calculate CAC,
+> 90-day LTV-proxy and ROAS reliably when customer acquisition data
+> and advertising spend are stored at different grains, and the
+> source dataset lacks channel information? This project focuses
+> on metric methodology and data validation — not on evaluating
+> real channel performance.
+
+This project answers it using a real e-commerce order dataset
+(Olist) joined to a synthetic ad-spend/channel layer (Olist ships
+no channel/UTM field), validated with a rule-of-three methodology:
+each metric is first computed as an ad hoc SQL query, then
+re-expressed as a dbt model that matches the ad hoc result exactly,
+then enforced in CI with dbt tests.
 
 > **Channel assignment and `ad_spend` are synthetic**, with a
 > fixed seed and independent of real purchase behaviour by design.
